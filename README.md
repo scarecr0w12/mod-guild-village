@@ -1,10 +1,10 @@
 # Guild Village
 
-- Guild Village modul přidává vlastní gildovní vesnice s upgrady, měnou, bossy, expedice. Spravuj, rozšiřuj a rozvíjej svou guild vesnici.
+- Guild Village modul přidává vlastní guildovní vesnice s upgrady, měnou, bossy a expedicemi. Spravuj, rozšiřuj a rozvíjej svou guildovní vesnici.
 - Stačí přidat pouze jedno NPC pro nákup vesnice. ".npc add 987454"
  
 ##
-- Guild Village module adds customizable guild villages with upgrades, currency, boss, expediton. Manage, expand, and develop your guild settlement.  
+- Guild Village module adds customizable guild villages with upgrades, currency, bosses, and expeditions. Manage, expand, and develop your guild settlement.  
 - Add only one NPC for village purchase. ".npc add 987454"  
 
 ----------------------------------------------------------------------------------------------------------------
@@ -18,6 +18,9 @@
 
 > **Recommended addon for WoW 3.3.5a that displays village information:**  
 > [Guild Village Helper (3.3.5a Addon)](https://github.com/BeardBear33/Guild-Village-Helper-3.3.5a)   
+
+> **Recommended addon for WoW 3.3.5a that ensures correct Czech diacritics display:**  
+> [CzechFontFix (3.3.5a Addon)](https://github.com/BeardBear33/Czech-font-fix-addon/releases)
 
 ----------------------------------------------------------------------------------------------------------------
 

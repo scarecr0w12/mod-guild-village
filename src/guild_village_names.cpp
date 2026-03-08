@@ -89,7 +89,7 @@ static void Load()
     g_all.units.gold.sg = GS(
         "GuildVillage.MaterialUnit.Gold.Singular",
         "GuildVillage.MaterialUnitEN.Gold.Singular",
-        "zlato",
+        "zlatý",
         "gold"
     );
     g_all.units.gold.du = GS(
@@ -187,7 +187,7 @@ std::string CountNameGold(uint64 n)
     if (!u.pl.empty()) return u.pl;
 
     // fallback
-    return IsEN() ? "gold" : "zlato";
+    return IsEN() ? "gold" : "zlatý";
 }
 
 static std::string JoinParts(std::vector<std::string> const& parts)

@@ -1213,7 +1213,7 @@ namespace GuildVillageMissions
 				AddGossipItemFor(
 					player,
 					GOSSIP_ICON_TAXI,
-					T("<< Predchozí stránka", "<< Previous page"),
+					T("<< Předchozí stránka", "<< Previous page"),
 					GOSSIP_SENDER_MAIN,
 					ACT_LOOTBANK_PAGE_BASE + prevPage
 				);
@@ -1372,7 +1372,7 @@ namespace GuildVillageMissions
 				AddGossipItemFor(
 					player,
 					GOSSIP_ICON_TAXI,
-					T("<< Predchozí stránka", "<< Previous page"),
+					T("<< Předchozí stránka", "<< Previous page"),
 					GOSSIP_SENDER_MAIN,
 					ACT_LOOTBANK_ITEM_BASE + encodedPrev
 				);
@@ -2236,7 +2236,7 @@ namespace GuildVillageMissions
             AddGossipItemFor(
                 player,
                 GOSSIP_ICON_BATTLE,
-                T("5M - Dungeon (Normal)", "5M - Dungeon (Normal)"),
+				T("5M - Dungeon (Normál)", "5M - Dungeon (Normal)"),
                 GOSSIP_SENDER_MAIN,
                 ACT_SELECT_NORMAL);
         }
@@ -2248,7 +2248,7 @@ namespace GuildVillageMissions
             AddGossipItemFor(
                 player,
                 GOSSIP_ICON_BATTLE,
-                T("5M - Dungeon (Heroic)", "5M - Dungeon (Heroic)"),
+				T("5M - Dungeon (Heroic)", "5M - Dungeon (Heroic)"),
                 GOSSIP_SENDER_MAIN,
                 ACT_SELECT_HEROIC);
         }
@@ -2289,7 +2289,7 @@ namespace GuildVillageMissions
         AddGossipItemFor(
             player,
             GOSSIP_ICON_MONEY_BAG,
-            T("Guild Loot Bank / Rozdat loot", "Guild Loot Bank / Distribute loot"),
+			T("Guild Loot Bank / Rozdat kořist", "Guild Loot Bank / Distribute loot"),
             GOSSIP_SENDER_MAIN,
             ACT_LOOTBANK_ROOT);
 

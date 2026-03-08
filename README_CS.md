@@ -6,10 +6,10 @@
 Tento modul umožňuje:  
 - Vytvořit guildovní vesnici  
 - Přidávat creature a gameobjecty  
-- Vlastní currency pro nákup rozšíření vesnice 
+- Vlastní měnu pro nákup rozšíření vesnice 
 - Jednoduchá správa všech nastavení
 - Nastavitelný limit pro vesnice, možnost nastavit automatické čištění při neaktivitě Guild Mastera
-- Denní a Týdenní úkoly pro guildu
+- Denní a týdenní úkoly pro guildu
 
 ### Instalace / Požadavky  
 Pro správnou funkčnost autoupdateru je nutné zajistit, aby uživatel databáze z `(WorldDatabaseInfo) – "127.0.0.1;3306;acore;acore;acore_world"`  
@@ -29,7 +29,7 @@ Nezapomeňte aplikovat také všechny předchozí updaty, pokud jste je vynechal
 - Po aplikaci updatu 014_important_update.sql se bude modul bude aktualizovat automaticky při spuštění serveru.
 
 **Volitelné:**
-- Přidej do worldserver.conf tento řádek:  
+- Přidejte do worldserver.conf tento řádek:  
   Logger.gv.customs=3,Console Server
 
 ##
@@ -44,15 +44,15 @@ Je nutné zajistit, že tato ID nejsou v `acore_world` již obsazená jiným obs
 - **Vlastní creatures (`creature_template.entry`):**
   - `987400`-`987430`, `987440`-`987454`
 
-- **Vlastni PoI (`points_of_interest.Entry`):**
+- **Vlastní PoI (`points_of_interest.Entry`):**
   - `1200`-`1250`
  
-- **Vlastni Graveyard (`game_graveyard.Entry`):**
+- **Vlastní Graveyard (`game_graveyard.Entry`):**
   - `2000`
   
 Pokud máš v databázi již jiné záznamy s těmito ID, je potřeba čísla v modulu i v SQL posunout na jiný volný rozsah.
 
-Odebrán smartAI pro cooking trenéra a ridding trenéra (pouze pohyb)
+Odebrán SmartAI pro cooking trenéra a riding trenéra (pouze pohyb).
 
 **Poznámky:**
 - Modul používá vlastní DB `customs` v tabulkách je dodatečná správa vesnice

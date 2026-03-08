@@ -128,7 +128,7 @@ GuildVillage.MaterialUnit.Material1.Plural   = Prken
 
 GuildVillage.MaterialUnit.Material2.Singular = Kámen
 GuildVillage.MaterialUnit.Material2.Dual     = Kameny
-GuildVillage.MaterialUnit.Material2.Plural   = Kamene
+GuildVillage.MaterialUnit.Material2.Plural   = Kamenů
 
 GuildVillage.MaterialUnit.Material3.Singular = Železo
 GuildVillage.MaterialUnit.Material3.Dual     = Železa
@@ -136,9 +136,9 @@ GuildVillage.MaterialUnit.Material3.Plural   = Železa
 
 GuildVillage.MaterialUnit.Material4.Singular = Krystal
 GuildVillage.MaterialUnit.Material4.Dual     = Krystaly
-GuildVillage.MaterialUnit.Material4.Plural   = Krystalu
+GuildVillage.MaterialUnit.Material4.Plural   = Krystalů
 
-GuildVillage.MaterialUnit.Gold.Singular = Zlata
+GuildVillage.MaterialUnit.Gold.Singular = Zlatý
 GuildVillage.MaterialUnit.Gold.Dual     = Zlaté
 GuildVillage.MaterialUnit.Gold.Plural   = Zlatých
 
@@ -155,8 +155,8 @@ GuildVillage.MaterialUnitEN.Material2.Dual     = stones
 GuildVillage.MaterialUnitEN.Material2.Plural   = stones
 
 GuildVillage.MaterialUnitEN.Material3.Singular = iron
-GuildVillage.MaterialUnitEN.Material3.Dual     = irons
-GuildVillage.MaterialUnitEN.Material3.Plural   = irons
+GuildVillage.MaterialUnitEN.Material3.Dual     = iron
+GuildVillage.MaterialUnitEN.Material3.Plural   = iron
 
 GuildVillage.MaterialUnitEN.Material4.Singular = crystal
 GuildVillage.MaterialUnitEN.Material4.Dual     = crystals

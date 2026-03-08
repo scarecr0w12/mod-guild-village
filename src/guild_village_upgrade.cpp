@@ -460,8 +460,8 @@ namespace GuildVillage
             {
                 AddGossipItemFor(player, GOSSIP_ICON_BATTLE,     T("Trenér", "Trainers"),      GOSSIP_SENDER_MAIN, ACT_CAT_TRAINERS);
                 AddGossipItemFor(player, GOSSIP_ICON_TRAINER,    T("Profese", "Professions"),  GOSSIP_SENDER_MAIN, ACT_CAT_PROFESSIONS);
-                AddGossipItemFor(player, GOSSIP_ICON_VENDOR,     T("Vendor", "Vendors"),       GOSSIP_SENDER_MAIN, ACT_CAT_VENDOR);
-                AddGossipItemFor(player, GOSSIP_ICON_INTERACT_1, T("Portály", "Portal"),       GOSSIP_SENDER_MAIN, ACT_CAT_PORTAL);
+                AddGossipItemFor(player, GOSSIP_ICON_VENDOR,     T("Obchodníci", "Vendors"),   GOSSIP_SENDER_MAIN, ACT_CAT_VENDOR);
+                AddGossipItemFor(player, GOSSIP_ICON_INTERACT_1, T("Portály", "Portals"),      GOSSIP_SENDER_MAIN, ACT_CAT_PORTAL);
                 AddGossipItemFor(player, GOSSIP_ICON_INTERACT_1, T("Objekty", "Objects"),      GOSSIP_SENDER_MAIN, ACT_CAT_OBJECTS);
                 AddGossipItemFor(player, GOSSIP_ICON_TABARD,     T("Ostatní", "Others"),       GOSSIP_SENDER_MAIN, ACT_CAT_OTHERS);
             }

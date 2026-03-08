@@ -717,7 +717,7 @@ namespace GuildVillageExpeditions
             std::string label = (LangOpt() == Lang::EN) ? c.label_en : c.label_cs;
             ChatHandler(player->GetSession()).SendSysMessage(
                 Acore::StringFormat(
-                    T("Hrdina {} se přidal do tvých řad.", "The hero {} has joined your ranks"),
+                    T("Hrdina {} se přidal do tvých řad.", "Hero {} has joined your ranks."),
                     label).c_str());
         }
 
