@@ -826,3 +826,30 @@ GuildVillage.Safe.Horde.X   = 1629.849976
 GuildVillage.Safe.Horde.Y   = -4373.640137
 GuildVillage.Safe.Horde.Z   = 31.549999
 GuildVillage.Safe.Horde.O   = 0.000000
+
+#========================================================#
+# Guild Village – PLAYERBOT VILLAGE ROUTING / PLAYERBOTS #
+#========================================================#
+
+# CS: Povolit periodické návštěvy guildovní vesnice pro playerboty,
+#     jejichž guilda vesnici vlastní.
+# EN: Enable periodic guild village visits for playerbots whose guild owns one.
+GuildVillage.PlayerbotVillage.Enable = 1
+
+# CS: Jak často (v sekundách) se má kontrolovat, zda bot vstoupí/opustí vesnici.
+# EN: How often (in seconds) to evaluate bot entry/exit conditions.
+GuildVillage.PlayerbotVillage.TickSeconds = 30
+
+# CS: Náhodný interval mezi návštěvami vesnice v minutách.
+# EN: Randomized interval between village visits in minutes.
+GuildVillage.PlayerbotVillage.IntervalMinMinutes = 30
+GuildVillage.PlayerbotVillage.IntervalMaxMinutes = 60
+
+# CS: Jak dlouho může bot během jedné návštěvy zůstat uvnitř vesnice.
+# EN: How long a bot may remain inside the village during one visit.
+GuildVillage.PlayerbotVillage.StayMinMinutes = 10
+GuildVillage.PlayerbotVillage.StayMaxMinutes = 20
+
+# CS: Debug logy pro plánování playerbot návštěv vesnice.
+# EN: Debug logging for playerbot village visit scheduling.
+GuildVillage.PlayerbotVillage.Debug = 0
