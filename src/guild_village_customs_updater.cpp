@@ -143,7 +143,7 @@ static bool EnsureSchemaAvailable()
     if (!GuildVillage::AutoCreateDatabase())
     {
         LOG_ERROR(
-            "gv.customs",
+            GuildVillage::LogCategory::Customs,
             "[customs] Database schema '{}' is missing. Create it manually or enable GuildVillage.Database.AutoCreate.",
             schemaName);
         return false;
@@ -156,7 +156,7 @@ static bool EnsureSchemaAvailable()
 
     if (!SchemaExists(schemaName))
     {
-        LOG_ERROR("gv.customs", "[customs] Failed to create database schema '{}'.", schemaName);
+        LOG_ERROR(GuildVillage::LogCategory::Customs, "[customs] Failed to create database schema '{}'.", schemaName);
         return false;
     }
 
@@ -288,7 +288,7 @@ static void CollectSqlFiles(std::string const& root, std::vector<std::string>& o
     std::error_code ec;
     if (!fs::exists(root, ec))
     {
-        LOG_INFO("gv.customs", "[customs] Dir not found: {}", root);
+        LOG_INFO(GuildVillage::LogCategory::Customs, "[customs] Dir not found: {}", root);
         return;
     }
     for (auto const& de : fs::directory_iterator(root, ec))
@@ -310,7 +310,7 @@ static bool ExecuteSqlFile(std::string const& moduleName, std::string const& fil
 
     if (raw.empty())
     {
-        LOG_WARN("gv.customs", "[customs] Empty file -> mark applied: {} (sha1={})", filenameKey, sha);
+        LOG_WARN(GuildVillage::LogCategory::Customs, "[customs] Empty file -> mark applied: {} (sha1={})", filenameKey, sha);
         MarkApplied(moduleName, filenameKey, sha);
         return true;
     }
@@ -324,27 +324,27 @@ static bool ExecuteSqlFile(std::string const& moduleName, std::string const& fil
 
     if (stmts.empty())
     {
-        LOG_INFO("gv.customs", "[customs] {}: nothing to execute after stripping comments (mark applied).", filenameKey);
+        LOG_INFO(GuildVillage::LogCategory::Customs, "[customs] {}: nothing to execute after stripping comments (mark applied).", filenameKey);
         MarkApplied(moduleName, filenameKey, sha);
         return true;
     }
 
-    LOG_INFO("gv.customs", "[customs] Executing {} statement(s) from {}", stmts.size(), filenameKey);
+    LOG_INFO(GuildVillage::LogCategory::Customs, "[customs] Executing {} statement(s) from {}", stmts.size(), filenameKey);
     for (auto const& s : stmts)
     {
         if (!GuildVillage::AutoCreateDatabase() && IsCreateDatabaseStatement(s))
         {
-            LOG_INFO("gv.customs", "[customs] Skipping schema creation statement in {}", filenameKey);
+            LOG_INFO(GuildVillage::LogCategory::Customs, "[customs] Skipping schema creation statement in {}", filenameKey);
             continue;
         }
 
         std::string prev = s.substr(0, std::min<size_t>(160, s.size()));
         WorldDatabase.DirectExecute(s);
-        LOG_DEBUG("gv.customs", "[customs] exec: {}{}", prev.c_str(), s.size()>160?" ...":"");
+        LOG_DEBUG(GuildVillage::LogCategory::Customs, "[customs] exec: {}{}", prev.c_str(), s.size()>160?" ...":"");
     }
 
     MarkApplied(moduleName, filenameKey, sha);
-    LOG_INFO("gv.customs", "[customs] Applied: {}", filenameKey);
+    LOG_INFO(GuildVillage::LogCategory::Customs, "[customs] Applied: {}", filenameKey);
     return true;
 }
 
@@ -385,7 +385,7 @@ public:
     {
         std::string moduleName = DetectModuleName();
         LOG_INFO(
-            "gv.customs",
+            GuildVillage::LogCategory::Customs,
             "[customs] Early bootstrap for module '{}' using schema '{}'",
             moduleName, GuildVillage::DatabaseName());
         EnsureBootstrapEarly(moduleName);
@@ -401,12 +401,12 @@ public:
         fs::path dirInc  = sqlRoot / "updates_include";
         fs::path dirUpd  = sqlRoot / "updates";
 
-        LOG_INFO("gv.customs", "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓");
-        LOG_INFO("gv.customs", "┃ Guild Village – Customs SQL Updater ┃");
-        LOG_INFO("gv.customs", "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛");
-        LOG_INFO("gv.customs", "[customs] Module: {}", moduleName);
-        LOG_INFO("gv.customs", "[customs] Database schema: {}", GuildVillage::DatabaseName());
-        LOG_INFO("gv.customs", "[customs] SQL root: {}", sqlRoot.string());
+        LOG_INFO(GuildVillage::LogCategory::Customs, "┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓");
+        LOG_INFO(GuildVillage::LogCategory::Customs, "┃ Guild Village – Customs SQL Updater ┃");
+        LOG_INFO(GuildVillage::LogCategory::Customs, "┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛");
+        LOG_INFO(GuildVillage::LogCategory::Customs, "[customs] Module: {}", moduleName);
+        LOG_INFO(GuildVillage::LogCategory::Customs, "[customs] Database schema: {}", GuildVillage::DatabaseName());
+        LOG_INFO(GuildVillage::LogCategory::Customs, "[customs] SQL root: {}", sqlRoot.string());
 
         if (!EnsureTrackingTable(moduleName))
             return;
@@ -418,8 +418,8 @@ public:
         RunPass("include", dirInc,  moduleName, applied, appliedN);
         RunPass("updates", dirUpd,  moduleName, applied, appliedN);
 
-        if (appliedN==0) LOG_INFO("gv.customs","[customs] Nothing to update – up to date.");
-        else             LOG_WARN("gv.customs","[customs] Applied {} file(s). If schema/gameplay changed, restart is recommended.", appliedN);
+        if (appliedN==0) LOG_INFO(GuildVillage::LogCategory::Customs,"[customs] Nothing to update – up to date.");
+        else             LOG_WARN(GuildVillage::LogCategory::Customs,"[customs] Applied {} file(s). If schema/gameplay changed, restart is recommended.", appliedN);
     }
 };
 

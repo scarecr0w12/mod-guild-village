@@ -1,12 +1,19 @@
-# mod-guild-village
+# mod-guild-village Legacy Czech Pointer
 
-This file is kept as a legacy entry point for older links.
+This file remains in the repository as a compatibility entry point for older Czech links and bookmarks.
 
-The maintained documentation is now English-only:
+The maintained documentation for the enhanced version is now here:
 
-- [README_EN.md](README_EN.md)
-- [README.md](README.md)
+- full English documentation: [README_EN.md](README_EN.md)
+- overview / landing page: [README.md](README.md)
+- current change history: [CHANGELOG.md](CHANGELOG.md)
 
-If you followed an older Czech link, use the English documentation above for installation, configuration, and database notes.
+If you arrived here from an older Czech guide, please switch to the English documentation above for:
+
+- installation steps
+- schema and SQL updater requirements
+- dedicated logging setup
+- persistence and restart troubleshooting
+- current enhanced-version notes
 
 

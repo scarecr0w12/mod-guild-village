@@ -23,7 +23,7 @@ namespace GuildVillage
     static std::optional<uint32> LoadGuildPhase(uint32 guildId)
     {
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT phase FROM customs.gv_guild WHERE guild={}", guildId))
+            "SELECT phase FROM {} WHERE guild={}", Table("gv_guild"), guildId))
             return (*r)[0].Get<uint32>();
         return std::nullopt;
     }
@@ -57,42 +57,42 @@ namespace GuildVillage
 
         // 1) customs: měny a upgrady
         WorldDatabase.Execute(
-			"DELETE FROM customs.gv_currency WHERE guildId={}",
-			guildId
-		);
+            "DELETE FROM {} WHERE guildId={}",
+            Table("gv_currency"), guildId
+        );
 			
         WorldDatabase.Execute(
-			"DELETE FROM customs.gv_upgrades WHERE guildId={}",
-			guildId
-		);
+            "DELETE FROM {} WHERE guildId={}",
+            Table("gv_upgrades"), guildId
+        );
 		
 		// 1.1) expedice: aktivní mise, loot, stav expedic pro guildu
-		WorldDatabase.Execute(
-			"DELETE FROM customs.gv_expedition_active WHERE guildId={}",
-			guildId
-		);
+        WorldDatabase.Execute(
+            "DELETE FROM {} WHERE guildId={}",
+            Table("gv_expedition_active"), guildId
+        );
 	
-		WorldDatabase.Execute(
-			"DELETE FROM customs.gv_expedition_loot WHERE guildId={}",
-			guildId
-		);
+        WorldDatabase.Execute(
+            "DELETE FROM {} WHERE guildId={}",
+            Table("gv_expedition_loot"), guildId
+        );
 	
-		WorldDatabase.Execute(
-			"DELETE FROM customs.gv_expedition_guild WHERE guildId={}",
-			guildId
-		);
+        WorldDatabase.Execute(
+            "DELETE FROM {} WHERE guildId={}",
+            Table("gv_expedition_guild"), guildId
+        );
 		
 		// 1.2) Vyčistit teleportační bod
-		WorldDatabase.Execute(
-			"DELETE FROM customs.gv_teleport_player WHERE guild={}",
-			guildId
-		);
+        WorldDatabase.Execute(
+            "DELETE FROM {} WHERE guild={}",
+            Table("gv_teleport_player"), guildId
+        );
 		
 		// 1.3) Vyčistit guild questy
-		WorldDatabase.Execute(
-			"DELETE FROM customs.gv_guild_quests WHERE guildId={}",
-			guildId
-		);
+        WorldDatabase.Execute(
+            "DELETE FROM {} WHERE guildId={}",
+            Table("gv_guild_quests"), guildId
+        );
 
         // 1.5) Vyčistit respawny v characters.* pro GUIDy této phase
         if (phaseId)
@@ -116,7 +116,7 @@ namespace GuildVillage
             DeleteByGuidBatches("creature_respawn", creatureGuids);
             DeleteByGuidBatches("gameobject_respawn", goGuids);
 
-            LOG_INFO("modules", "GV: Cleared respawns for guild {} (phaseId={}, map={}, creatures={}, gos={})",
+            LOG_INFO(LogCategory::Cleanup, "GV: Cleared respawns for guild {} (phaseId={}, map={}, creatures={}, gos={})",
                      guildId, phaseId, DefMap(), creatureGuids.size(), goGuids.size());
         }
 		
@@ -130,16 +130,16 @@ namespace GuildVillage
         }
 
 		// 2.5) produkce (aktivní sloty + koupené ranky produkce)
-		WorldDatabase.Execute(
-			"DELETE FROM customs.gv_production_active WHERE guildId={}", guildId);
+        WorldDatabase.Execute(
+            "DELETE FROM {} WHERE guildId={}", Table("gv_production_active"), guildId);
 		
-		WorldDatabase.Execute(
-			"DELETE FROM customs.gv_production_upgrade WHERE guildId={}", guildId);
+        WorldDatabase.Execute(
+            "DELETE FROM {} WHERE guildId={}", Table("gv_production_upgrade"), guildId);
 
         // 3) AŽ NAKONEC záznam o vesnici
-        WorldDatabase.Execute("DELETE FROM customs.gv_guild WHERE guild={}", guildId);
+        WorldDatabase.Execute("DELETE FROM {} WHERE guild={}", Table("gv_guild"), guildId);
 
-        LOG_INFO("modules", "GV: Disband cleanup done for guild {} (phaseId={})", guildId, phaseId);
+        LOG_INFO(LogCategory::Cleanup, "GV: Disband cleanup done for guild {} (phaseId={})", guildId, phaseId);
     }
 
     class guild_village_Disband : public GuildScript
@@ -151,6 +151,10 @@ namespace GuildVillage
         {
             if (!guild)
                 return;
+
+            LOG_INFO(LogCategory::Trigger,
+                "GV: Guild disband trigger guildId={} guildName='{}'",
+                guild->GetId(), guild->GetName());
 
             WipeGuildVillage(guild->GetId());
         }

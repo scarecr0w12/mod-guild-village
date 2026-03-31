@@ -151,9 +151,9 @@ namespace GuildVillageMissions
 
     static std::optional<ExpGuildRow> LoadGuildExpData(uint32 guildId)
     {
-        if (QueryResult r = WorldDatabase.Query(
-                "SELECT heroes_owned, heroes_on_mission, heroes_max, gear_level "
-                "FROM customs.gv_expedition_guild WHERE guildId={}", guildId))
+		if (QueryResult r = WorldDatabase.Query(
+			"SELECT heroes_owned, heroes_on_mission, heroes_max, gear_level "
+			"FROM {} WHERE guildId={}", GuildVillage::Table("gv_expedition_guild"), guildId))
         {
             Field* f = r->Fetch();
             ExpGuildRow row;
@@ -312,8 +312,8 @@ namespace GuildVillageMissions
     {
         if (QueryResult r = WorldDatabase.Query(
 				"SELECT cost_mat1, cost_mat2, cost_mat3, cost_mat4, cost_gold "
-				"FROM customs.gv_expedition_mission_cost WHERE mission_name='{}'",
-				missionName))
+				"FROM {} WHERE mission_name='{}'",
+				GuildVillage::Table("gv_expedition_mission_cost"), missionName))
         {
             Field* f = r->Fetch();
             MissionCost mc;
@@ -391,8 +391,8 @@ namespace GuildVillageMissions
 	{
 		MissionReq r{};
 		if (QueryResult q = WorldDatabase.Query(
-				"SELECT ilvl, heroes FROM customs.gv_expedition_requirements WHERE mission_name='{}' LIMIT 1",
-				missionName))
+				"SELECT ilvl, heroes FROM {} WHERE mission_name='{}' LIMIT 1",
+				GuildVillage::Table("gv_expedition_requirements"), missionName))
 		{
 			Field* f = q->Fetch();
 			r.ilvl   = f[0].Get<uint16>();
@@ -437,9 +437,9 @@ namespace GuildVillageMissions
 
         // načtení měny guildy
         uint64 m1=0, m2=0, m3=0, m4=0;
-        if (QueryResult q = WorldDatabase.Query(
-                "SELECT material1, material2, material3, material4 "
-                "FROM customs.gv_currency WHERE guildId={}", guildId))
+		if (QueryResult q = WorldDatabase.Query(
+			"SELECT material1, material2, material3, material4 "
+			"FROM {} WHERE guildId={}", GuildVillage::Table("gv_currency"), guildId))
         {
             Field* f = q->Fetch();
             m1 = f[0].Get<uint64>();
@@ -462,15 +462,15 @@ namespace GuildVillageMissions
             return false;
 
         // odečíst currency guildy
-        WorldDatabase.DirectExecute(
-            "UPDATE customs.gv_currency SET "
+		WorldDatabase.DirectExecute(
+			"UPDATE {} SET "
             "material1 = material1 - {}, "
             "material2 = material2 - {}, "
             "material3 = material3 - {}, "
             "material4 = material4 - {}, "
             "last_update = NOW() "
             "WHERE guildId = {}",
-            needMat1, needMat2, needMat3, needMat4, guildId);
+			GuildVillage::Table("gv_currency"), needMat1, needMat2, needMat3, needMat4, guildId);
 
         // odečíst goldy hráče
         if (needCopper > 0)
@@ -658,9 +658,9 @@ namespace GuildVillageMissions
         if (countHeroes > 25)
             countHeroes = 25;
 
-        if (QueryResult r = WorldDatabase.Query(
-                "SELECT successChance FROM customs.gv_expedition_catalog WHERE slot={}",
-                (uint32)countHeroes))
+		if (QueryResult r = WorldDatabase.Query(
+			"SELECT successChance FROM {} WHERE slot={}",
+			GuildVillage::Table("gv_expedition_catalog"), (uint32)countHeroes))
         {
             Field* f = r->Fetch();
             uint8 chance = f[0].Get<uint8>();
@@ -754,11 +754,11 @@ namespace GuildVillageMissions
     static std::vector<LootRow> LoadGuildLoot(uint32 guildId)
     {
         std::vector<LootRow> out;
-        if (QueryResult r = WorldDatabase.Query(
-                "SELECT id, guildId, itemId, amount "
-                "FROM customs.gv_expedition_loot "
-                "WHERE guildId={} ORDER BY itemId ASC",
-                guildId))
+		if (QueryResult r = WorldDatabase.Query(
+			"SELECT id, guildId, itemId, amount "
+			"FROM {} "
+			"WHERE guildId={} ORDER BY itemId ASC",
+			GuildVillage::Table("gv_expedition_loot"), guildId))
         {
             do
             {
@@ -779,16 +779,16 @@ namespace GuildVillageMissions
     static void DecrementLootEntry(uint64 lootEntryId)
     {
         // nejdřív snížit amount -1, a pak smazat pokud padne na 0
-        WorldDatabase.DirectExecute(
-            "UPDATE customs.gv_expedition_loot "
+		WorldDatabase.DirectExecute(
+			"UPDATE {} "
             "SET amount = amount - 1 "
             "WHERE id={} AND amount > 0",
-            lootEntryId);
+			GuildVillage::Table("gv_expedition_loot"), lootEntryId);
 
-        WorldDatabase.DirectExecute(
-            "DELETE FROM customs.gv_expedition_loot "
-            "WHERE id={} AND amount <= 0",
-            lootEntryId);
+		WorldDatabase.DirectExecute(
+			"DELETE FROM {} "
+			"WHERE id={} AND amount <= 0",
+			GuildVillage::Table("gv_expedition_loot"), lootEntryId);
     }
 
     // ODESLÁNÍ MAILU HRÁČI
@@ -924,8 +924,8 @@ namespace GuildVillageMissions
     static std::unordered_set<uint32> LoadWatchGUIDs(uint32 guildId)
     {
         std::unordered_set<uint32> watch;
-        if (QueryResult r = WorldDatabase.Query(
-            "SELECT playerGuid FROM customs.gv_expedition_member_watch WHERE guildId={}", guildId))
+		if (QueryResult r = WorldDatabase.Query(
+			"SELECT playerGuid FROM {} WHERE guildId={}", GuildVillage::Table("gv_expedition_member_watch"), guildId))
         {
             do
             {
@@ -971,15 +971,15 @@ namespace GuildVillageMissions
 			// aby neměl "starý veterán timestamp" z jiné guildy,
 			// vyčistím všechny jeho staré záznamy napříč všemi guildami
 			WorldDatabase.DirectExecute(
-				"DELETE FROM customs.gv_expedition_member_watch WHERE playerGuid={}",
-				guidLow
+				"DELETE FROM {} WHERE playerGuid={}",
+				GuildVillage::Table("gv_expedition_member_watch"), guidLow
 			);
 	
 			// zapíšu nový čistý záznam pro aktuální guildId s aktuálním časem
 			WorldDatabase.DirectExecute(
-				"INSERT INTO customs.gv_expedition_member_watch (guildId, playerGuid, join_time) "
+				"INSERT INTO {} (guildId, playerGuid, join_time) "
 				"VALUES ({}, {}, {})",
-				guildId,
+				GuildVillage::Table("gv_expedition_member_watch"), guildId,
 				guidLow,
 				nowTs
 			);
@@ -990,12 +990,12 @@ namespace GuildVillageMissions
         {
             if (!roster.count(guidLow))
             {
-                WorldDatabase.DirectExecute(
-                    "DELETE FROM customs.gv_expedition_member_watch "
-                    "WHERE guildId={} AND playerGuid={}",
-                    guildId,
-                    guidLow
-                );
+				WorldDatabase.DirectExecute(
+					"DELETE FROM {} "
+					"WHERE guildId={} AND playerGuid={} ",
+					GuildVillage::Table("gv_expedition_member_watch"), guildId,
+					guidLow
+				);
             }
         }
     }
@@ -1015,11 +1015,11 @@ namespace GuildVillageMissions
         if (minDays == 0)
             return true; // ochrana vypnutá
 
-        if (QueryResult r = WorldDatabase.Query(
-            "SELECT join_time FROM customs.gv_expedition_member_watch "
-            "WHERE guildId={} AND playerGuid={} LIMIT 1",
-            guildId,
-            playerGuidLow))
+		if (QueryResult r = WorldDatabase.Query(
+			"SELECT join_time FROM {} "
+			"WHERE guildId={} AND playerGuid={} LIMIT 1",
+			GuildVillage::Table("gv_expedition_member_watch"), guildId,
+			playerGuidLow))
         {
             Field* f = r->Fetch();
             uint32 joinTs = f[0].Get<uint32>();
@@ -1810,10 +1810,10 @@ namespace GuildVillageMissions
         //   success_chance TINYINT
         //   resolved TINYINT DEFAULT 0
         WorldDatabase.DirectExecute(
-			"INSERT INTO customs.gv_expedition_active "
+			"INSERT INTO {} "
 			"(guildId, mission_name, heroes_sent, end_time, success_chance, resolved) "
 			"VALUES ({}, '{}', {}, FROM_UNIXTIME({}), {}, 0)",
-			g->GetId(),
+			GuildVillage::Table("gv_expedition_active"), g->GetId(),
 			mi.name,
 			(uint32)toSend,
 			(uint32)endSec,
@@ -1821,10 +1821,11 @@ namespace GuildVillageMissions
 		);
 
         // zvětšit heroes_on_mission
-        WorldDatabase.DirectExecute(
-            "UPDATE customs.gv_expedition_guild "
+		WorldDatabase.DirectExecute(
+			"UPDATE {} "
             "SET heroes_on_mission = heroes_on_mission + {}, last_update = NOW() "
             "WHERE guildId={}",
+			GuildVillage::Table("gv_expedition_guild"),
             (uint32)toSend,
             g->GetId()
         );
@@ -1905,10 +1906,10 @@ namespace GuildVillageMissions
 			return;
 	
 		tx->Append(
-			"INSERT INTO customs.gv_expedition_loot (guildId, itemId, amount) "
+			"INSERT INTO {} (guildId, itemId, amount) "
 			"VALUES ({}, {}, {}) "
 			"ON DUPLICATE KEY UPDATE amount = amount + VALUES(amount)",
-			guildId, itemId, count
+			GuildVillage::Table("gv_expedition_loot"), guildId, itemId, count
 		);
 	}
 
@@ -1935,19 +1936,21 @@ namespace GuildVillageMissions
 	
 		// 2) Vrátit hrdiny domů
 		tx->Append(
-			"UPDATE customs.gv_expedition_guild "
+			"UPDATE {} "
 			"SET heroes_on_mission = GREATEST(heroes_on_mission - {}, 0), "
 			"    last_update = NOW() "
 			"WHERE guildId={}",
+			GuildVillage::Table("gv_expedition_guild"),
 			(uint32)heroesSent,
 			guildId
 		);
 	
 		// 3) Označit expedici jako vyřešenou
 		tx->Append(
-			"UPDATE customs.gv_expedition_active "
+			"UPDATE {} "
 			"SET resolved=1, resolved_at=NOW() "
 			"WHERE id={}",
+			GuildVillage::Table("gv_expedition_active"),
 			(uint32)activeId
 		);
 	
@@ -1958,21 +1961,21 @@ namespace GuildVillageMissions
 	static void CleanupResolvedExpeditions()
 	{
 		WorldDatabase.DirectExecute(
-			"DELETE FROM customs.gv_expedition_active "
+			"DELETE FROM {} "
 			"WHERE resolved=1 AND ("
 			"      (resolved_at IS NOT NULL AND resolved_at <= NOW() - INTERVAL 5 SECOND)"
 			"   OR (resolved_at IS NULL AND end_time   <= NOW() - INTERVAL 30 SECOND)"
-			")"
+			")", GuildVillage::Table("gv_expedition_active")
 		);
 	}
 
     // projít všechny expedice, co doběhly
     static void ProcessFinishedExpeditions()
     {
-        if (QueryResult r = WorldDatabase.Query(
-                "SELECT id, guildId, mission_name, heroes_sent, success_chance "
-                "FROM customs.gv_expedition_active "
-                "WHERE resolved=0 AND end_time <= NOW()"))
+		if (QueryResult r = WorldDatabase.Query(
+			"SELECT id, guildId, mission_name, heroes_sent, success_chance "
+			"FROM {} "
+			"WHERE resolved=0 AND end_time <= NOW()", GuildVillage::Table("gv_expedition_active")))
         {
             do
             {
@@ -2011,10 +2014,10 @@ namespace GuildVillageMissions
 	
 		if (QueryResult r = WorldDatabase.Query(
 			"SELECT mission_name, UNIX_TIMESTAMP(end_time) "
-			"FROM customs.gv_expedition_active "
+			"FROM {} "
 			"WHERE guildId={} AND resolved=0 AND end_time > NOW() "
 			"ORDER BY end_time ASC",
-			guildId))
+			GuildVillage::Table("gv_expedition_active"), guildId))
 		{
 			do
 			{

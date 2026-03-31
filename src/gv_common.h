@@ -3,6 +3,7 @@
 #include "Config.h"
 #include "DataMap.h"
 #include "DatabaseEnv.h"
+#include "Log.h"
 #include "StringFormat.h"
 
 #include <algorithm>
@@ -15,6 +16,20 @@
 
 namespace GuildVillage
 {
+    namespace LogCategory
+    {
+        inline constexpr char const* Root = "guildvillage";
+        inline constexpr char const* Purchase = "guildvillage.purchase";
+        inline constexpr char const* Action = "guildvillage.action";
+        inline constexpr char const* Trigger = "guildvillage.trigger";
+        inline constexpr char const* Cleanup = "guildvillage.cleanup";
+        inline constexpr char const* Command = "guildvillage.command";
+        inline constexpr char const* Teleport = "guildvillage.teleport";
+        inline constexpr char const* Upgrade = "guildvillage.upgrade";
+        inline constexpr char const* GM = "guildvillage.gm";
+        inline constexpr char const* Customs = "guildvillage.customs";
+    }
+
     struct GVPhaseData : public DataMap::Base
     {
         uint32 phaseMask = 0;
@@ -91,65 +106,9 @@ namespace GuildVillage
         return QuoteIdentifier(DatabaseName());
     }
 
-    inline void ReplaceAll(std::string& sql, std::string_view from, std::string const& to)
+    inline std::string Table(std::string_view tableName)
     {
-        if (from.empty())
-            return;
-
-        size_t pos = 0;
-        while ((pos = sql.find(from, pos)) != std::string::npos)
-        {
-            sql.replace(pos, from.size(), to);
-            pos += to.size();
-        }
+        return QuotedDatabaseName() + "." + QuoteIdentifier(std::string(tableName));
     }
 
-    inline std::string RewriteWorldSql(std::string sql)
-    {
-        std::string const qualifiedDatabase = QuotedDatabaseName() + ".";
-
-        ReplaceAll(sql, "`customs`.", qualifiedDatabase);
-        ReplaceAll(sql, "customs.", qualifiedDatabase);
-
-        return sql;
-    }
-
-    class WorldDatabaseProxy
-    {
-    public:
-        template <typename... Args>
-        QueryResult Query(std::string sql, Args&&... args) const
-        {
-            return ::WorldDatabase.Query(
-                RewriteWorldSql(std::move(sql)), std::forward<Args>(args)...);
-        }
-
-        template <typename... Args>
-        void Execute(std::string sql, Args&&... args) const
-        {
-            ::WorldDatabase.Execute(
-                RewriteWorldSql(std::move(sql)), std::forward<Args>(args)...);
-        }
-
-        template <typename... Args>
-        void DirectExecute(std::string sql, Args&&... args) const
-        {
-            ::WorldDatabase.DirectExecute(
-                RewriteWorldSql(std::move(sql)), std::forward<Args>(args)...);
-        }
-
-        WorldDatabaseTransaction BeginTransaction() const
-        {
-            return ::WorldDatabase.BeginTransaction();
-        }
-
-        void CommitTransaction(WorldDatabaseTransaction transaction) const
-        {
-            ::WorldDatabase.CommitTransaction(std::move(transaction));
-        }
-    };
-
-    inline WorldDatabaseProxy GVWorldDatabase;
 }
-
-#define WorldDatabase ::GuildVillage::GVWorldDatabase

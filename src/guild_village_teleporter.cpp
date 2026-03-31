@@ -41,7 +41,8 @@ namespace GuildVillage
     static uint32 LoadGuildVillagePhaseId(uint32 guildId)
     {
         if (!guildId) return 0;
-        if (QueryResult r = WorldDatabase.Query("SELECT phase FROM customs.gv_guild WHERE guild={}", guildId))
+        if (QueryResult r = WorldDatabase.Query(
+            "SELECT phase FROM {} WHERE guild={}", Table("gv_guild"), guildId))
             return (*r)[0].Get<uint32>();
         return 0;
     }
@@ -63,8 +64,8 @@ namespace GuildVillage
 
         // exists v customs.gv_upgrades (guildId + expansion_key)
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT 1 FROM customs.gv_upgrades WHERE guildId={} AND expansion_key='{}' LIMIT 1",
-                guildId, k))
+            "SELECT 1 FROM {} WHERE guildId={} AND expansion_key='{}' LIMIT 1",
+            Table("gv_upgrades"), guildId, k))
             return true;
 
         return false;
@@ -95,9 +96,9 @@ namespace GuildVillage
     {
         std::vector<TeleRow> v;
         if (QueryResult qr = WorldDatabase.Query(
-                "SELECT id, label_cs, label_en, x, y, z, o, sort_index, IFNULL(expansion_required,'') "
-                "FROM customs.gv_teleport_menu WHERE teleporter_entry={} ORDER BY sort_index, id",
-                entry))
+            "SELECT id, label_cs, label_en, x, y, z, o, sort_index, IFNULL(expansion_required,'') "
+            "FROM {} WHERE teleporter_entry={} ORDER BY sort_index, id",
+            Table("gv_teleport_menu"), entry))
         {
             do
             {
@@ -156,6 +157,9 @@ namespace GuildVillage
 
             if (go->GetPhaseMask() != gvPhase)
             {
+                LOG_WARN(LogCategory::Teleport,
+                    "GV: Teleporter denied player='{}' playerGuid={} guildId={} reason=phase-mismatch teleporterEntry={} goPhase={} guildPhase={}",
+                    player->GetName(), player->GetGUID().GetCounter(), gid, go->GetEntry(), go->GetPhaseMask(), gvPhase);
                 ChatHandler(player->GetSession()).SendSysMessage(T("Tento teleporter nepatří tvé guildě.", "This teleporter does not belong to your guild."));
                 return true;
             }
@@ -221,7 +225,7 @@ namespace GuildVillage
 
             uint32 rowId = Decode(action);
             QueryResult qr = WorldDatabase.Query(
-                "SELECT x, y, z, o FROM customs.gv_teleport_menu WHERE id={}", rowId);
+                "SELECT x, y, z, o FROM {} WHERE id={}", Table("gv_teleport_menu"), rowId);
 
             if (!qr)
             {
@@ -236,6 +240,10 @@ namespace GuildVillage
             float o = f[3].Get<float>();
 
             player->CustomData.GetDefault<GVPhaseData>("gv_phase")->phaseMask = gvPhase;
+
+            LOG_INFO(LogCategory::Teleport,
+                "GV: Teleporter destination player='{}' playerGuid={} guildId={} rowId={} map={} phaseId={} x={} y={} z={}",
+                player->GetName(), player->GetGUID().GetCounter(), g->GetId(), rowId, DefMap(), gvPhase, x, y, z);
 
             player->SetPhaseMask(gvPhase, true);
             player->TeleportTo(DefMap(), x, y, z, o);

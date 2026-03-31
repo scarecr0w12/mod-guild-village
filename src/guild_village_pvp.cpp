@@ -120,10 +120,10 @@ namespace GuildVillage
         {
             // bez capu
             WorldDatabase.DirectExecute(Acore::StringFormat(
-                "UPDATE customs.gv_currency SET "
+                "UPDATE {} SET "
                 "material1=material1+{}, material2=material2+{}, material3=material3+{}, material4=material4+{}, last_update=NOW() "
                 "WHERE guildId={}",
-                g.material1, g.material2, g.material3, g.material4, guildId).c_str());
+                Table("gv_currency"), g.material1, g.material2, g.material3, g.material4, guildId).c_str());
 
             return g;
         }
@@ -131,7 +131,7 @@ namespace GuildVillage
         // načtení aktuálního stavu
         uint32 cur1 = 0, cur2 = 0, cur3 = 0, cur4 = 0;
         if (QueryResult q = WorldDatabase.Query(
-                "SELECT material1, material2, material3, material4 FROM customs.gv_currency WHERE guildId={}", guildId))
+            "SELECT material1, material2, material3, material4 FROM {} WHERE guildId={}", Table("gv_currency"), guildId))
         {
             Field* f = q->Fetch();
             cur1 = f[0].Get<uint32>();
@@ -161,10 +161,10 @@ namespace GuildVillage
             return applied;
 
         WorldDatabase.DirectExecute(Acore::StringFormat(
-            "UPDATE customs.gv_currency SET "
+            "UPDATE {} SET "
             "material1=material1+{}, material2=material2+{}, material3=material3+{}, material4=material4+{}, last_update=NOW() "
             "WHERE guildId={}",
-            add1, add2, add3, add4, guildId).c_str());
+            Table("gv_currency"), add1, add2, add3, add4, guildId).c_str());
 
         applied.material1 = add1;
         applied.material2 = add2;

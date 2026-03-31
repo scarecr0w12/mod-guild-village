@@ -42,7 +42,7 @@ namespace GuildVillage
     static std::optional<uint32> LoadVillagePhase(uint32 guildId)
     {
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT phase FROM customs.gv_guild WHERE guild={}", guildId))
+            "SELECT phase FROM {} WHERE guild={}", Table("gv_guild"), guildId))
             return (*r)[0].Get<uint32>();
         return std::nullopt;
     }
@@ -76,8 +76,8 @@ namespace GuildVillage
         }
 
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT id, expansion_key, label_cs, label_en, cost_material1, cost_material2, cost_material3, cost_material4, sort_order "
-                "FROM customs.gv_upgrade_catalog WHERE category='{}' ORDER BY sort_order, id", catName))
+            "SELECT id, expansion_key, label_cs, label_en, cost_material1, cost_material2, cost_material3, cost_material4, sort_order "
+            "FROM {} WHERE category='{}' ORDER BY sort_order, id", Table("gv_upgrade_catalog"), catName))
         {
             do
             {
@@ -117,7 +117,7 @@ namespace GuildVillage
     {
         if (QueryResult r = WorldDatabase.Query(
             "SELECT id, category, expansion_key, label_cs, label_en, cost_material1, cost_material2, cost_material3, cost_material4, sort_order "
-            "FROM customs.gv_upgrade_catalog WHERE id={}", id))
+            "FROM {} WHERE id={}", Table("gv_upgrade_catalog"), id))
         {
             Field* f = r->Fetch();
 
@@ -157,8 +157,8 @@ namespace GuildVillage
     {
         if (QueryResult r = WorldDatabase.Query(
             "SELECT map, pos_x, pos_y, icon, flags, poi_id, name_cs, name_en "
-            "FROM customs.gv_upgrade_poi WHERE expansion_key='{}' AND faction={}",
-            key, (uint32)factionFilter))
+            "FROM {} WHERE expansion_key='{}' AND faction={} ",
+            Table("gv_upgrade_poi"), key, (uint32)factionFilter))
         {
             Field* f = r->Fetch(); PoiRow p;
             p.map=f[0].Get<uint32>(); p.x=f[1].Get<float>(); p.y=f[2].Get<float>();
@@ -169,8 +169,8 @@ namespace GuildVillage
         }
         if (QueryResult r = WorldDatabase.Query(
             "SELECT map, pos_x, pos_y, icon, flags, poi_id, name_cs, name_en "
-            "FROM customs.gv_upgrade_poi WHERE expansion_key='{}' AND faction=0",
-            key))
+            "FROM {} WHERE expansion_key='{}' AND faction=0",
+            Table("gv_upgrade_poi"), key))
         {
             Field* f = r->Fetch(); PoiRow p;
             p.map=f[0].Get<uint32>(); p.x=f[1].Get<float>(); p.y=f[2].Get<float>();
@@ -187,7 +187,7 @@ namespace GuildVillage
     {
         std::unordered_set<std::string> out;
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT expansion_key FROM customs.gv_upgrades WHERE guildId={}", guildId))
+            "SELECT expansion_key FROM {} WHERE guildId={}", Table("gv_upgrades"), guildId))
         {
             do { out.insert(r->Fetch()[0].Get<std::string>()); }
             while (r->NextRow());

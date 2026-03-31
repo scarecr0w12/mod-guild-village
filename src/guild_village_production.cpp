@@ -73,7 +73,7 @@ namespace GuildVillageProduction
     static std::optional<uint32> LoadVillagePhase(uint32 guildId)
     {
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT phase FROM customs.gv_guild WHERE guild={}", guildId))
+                "SELECT phase FROM {} WHERE guild={}", GuildVillage::Table("gv_guild"), guildId))
         {
             return (*r)[0].Get<uint32>();
         }
@@ -169,10 +169,10 @@ namespace GuildVillageProduction
         UpgradeRanks out;
 
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT amount_rank, speed_rank "
-                "FROM customs.gv_production_upgrade "
-                "WHERE guildId={} AND material_id={}",
-                guildId, (uint32)materialId))
+            "SELECT amount_rank, speed_rank "
+            "FROM {} "
+            "WHERE guildId={} AND material_id={}",
+                GuildVillage::Table("gv_production_upgrade"), guildId, (uint32)materialId))
         {
             Field* f = r->Fetch();
             out.amountRank = f[0].Get<uint8>();
@@ -181,10 +181,10 @@ namespace GuildVillageProduction
         else
         {
             WorldDatabase.Execute(
-                "INSERT INTO customs.gv_production_upgrade "
+                "INSERT INTO {} "
                 "(guildId, material_id, amount_rank, speed_rank) "
                 "VALUES ({}, {}, 0, 0)",
-                guildId, (uint32)materialId);
+                GuildVillage::Table("gv_production_upgrade"), guildId, (uint32)materialId);
 
             out.amountRank = 0;
             out.speedRank  = 0;
@@ -206,10 +206,10 @@ namespace GuildVillageProduction
         std::vector<ActiveProductionRow> out;
 
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT guildId, material_id, started_at, last_tick "
-                "FROM customs.gv_production_active "
-                "WHERE guildId={}",
-                guildId))
+            "SELECT guildId, material_id, started_at, last_tick "
+            "FROM {} "
+            "WHERE guildId={}",
+                GuildVillage::Table("gv_production_active"), guildId))
         {
             do
             {
@@ -230,9 +230,9 @@ namespace GuildVillageProduction
     static bool IsMaterialActive(uint32 guildId, uint8 materialId)
     {
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT 1 FROM customs.gv_production_active "
-                "WHERE guildId={} AND material_id={} LIMIT 1",
-                guildId, (uint32)materialId))
+            "SELECT 1 FROM {} "
+            "WHERE guildId={} AND material_id={} LIMIT 1",
+                GuildVillage::Table("gv_production_active"), guildId, (uint32)materialId))
         {
             return true;
         }
@@ -247,19 +247,19 @@ namespace GuildVillageProduction
         if (!IsMaterialActive(guildId, materialId))
         {
             WorldDatabase.Execute(
-                "INSERT INTO customs.gv_production_active "
+                "INSERT INTO {} "
                 "(guildId, material_id, started_at, last_tick) "
                 "VALUES ({}, {}, {}, {})",
-                guildId, (uint32)materialId, now, now);
+                GuildVillage::Table("gv_production_active"), guildId, (uint32)materialId, now, now);
         }
     }
 
     static void StopMaterial(uint32 guildId, uint8 materialId)
     {
         WorldDatabase.DirectExecute(
-            "DELETE FROM customs.gv_production_active "
+            "DELETE FROM {} "
             "WHERE guildId={} AND material_id={}",
-            guildId, (uint32)materialId);
+            GuildVillage::Table("gv_production_active"), guildId, (uint32)materialId);
     }
 
     struct CatalogProdRow
@@ -279,12 +279,12 @@ namespace GuildVillageProduction
     static std::optional<CatalogProdRow> LoadProductionCatalog(uint8 materialId, uint8 upgradeType, uint8 rankToBuy)
     {
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT id, material_id, upgrade_type, `rank`, label_cs, label_en, "
-                "cost_material1, cost_material2, cost_material3, cost_material4 "
-                "FROM customs.gv_production_catalog "
+            "SELECT id, material_id, upgrade_type, `rank`, label_cs, label_en, "
+            "cost_material1, cost_material2, cost_material3, cost_material4 "
+            "FROM {} "
                 "WHERE material_id={} AND upgrade_type={} AND `rank`={} "
                 "LIMIT 1",
-                (uint32)materialId, (uint32)upgradeType, (uint32)rankToBuy))
+                GuildVillage::Table("gv_production_catalog"), (uint32)materialId, (uint32)upgradeType, (uint32)rankToBuy))
         {
             Field* f = r->Fetch();
 
@@ -315,9 +315,9 @@ namespace GuildVillageProduction
     static std::optional<GuildCurrency> LoadGuildCurrencyNow(uint32 guildId)
     {
         if (QueryResult res = WorldDatabase.Query(
-                "SELECT material1, material2, material3, material4 "
-                "FROM customs.gv_currency WHERE guildId={}",
-                guildId))
+            "SELECT material1, material2, material3, material4 "
+            "FROM {} WHERE guildId={}",
+                GuildVillage::Table("gv_currency"), guildId))
         {
             Field* f = res->Fetch();
             GuildCurrency c;
@@ -340,9 +340,9 @@ namespace GuildVillageProduction
         uint64 m1 = 0, m2 = 0, m3 = 0, m4 = 0;
 
         if (QueryResult q = WorldDatabase.Query(
-                "SELECT material1, material2, material3, material4 "
-                "FROM customs.gv_currency WHERE guildId={}",
-                guildId))
+            "SELECT material1, material2, material3, material4 "
+            "FROM {} WHERE guildId={}",
+                GuildVillage::Table("gv_currency"), guildId))
         {
             Field* f = q->Fetch();
             m1 = f[0].Get<uint64>();
@@ -415,10 +415,10 @@ namespace GuildVillageProduction
         }
 
         WorldDatabase.DirectExecute(
-            "UPDATE customs.gv_currency "
+            "UPDATE {} "
             "SET material1={}, material2={}, material3={}, material4={}, last_update=NOW() "
             "WHERE guildId={}",
-            (uint64)m1, (uint64)m2, (uint64)m3, (uint64)m4, guildId);
+            GuildVillage::Table("gv_currency"), (uint64)m1, (uint64)m2, (uint64)m3, (uint64)m4, guildId);
 
         return hitCapMat;
     }
@@ -428,9 +428,9 @@ namespace GuildVillageProduction
         uint32 mat1 = 0, mat2 = 0, mat3 = 0, mat4 = 0;
 
         if (QueryResult q = WorldDatabase.Query(
-                "SELECT material1, material2, material3, material4 "
-                "FROM customs.gv_currency WHERE guildId={}",
-                guildId))
+            "SELECT material1, material2, material3, material4 "
+            "FROM {} WHERE guildId={}",
+                GuildVillage::Table("gv_currency"), guildId))
         {
             Field* f = q->Fetch();
             mat1 = f[0].Get<uint32>();
@@ -452,14 +452,14 @@ namespace GuildVillageProduction
         }
 
         WorldDatabase.Execute(
-            "UPDATE customs.gv_currency SET "
+            "UPDATE {} SET "
             "material1 = material1 - {}, "
             "material2 = material2 - {}, "
             "material3 = material3 - {}, "
             "material4 = material4 - {}, "
             "last_update = NOW() "
             "WHERE guildId = {}",
-            c.cost_mat1, c.cost_mat2, c.cost_mat3, c.cost_mat4, guildId);
+            GuildVillage::Table("gv_currency"), c.cost_mat1, c.cost_mat2, c.cost_mat3, c.cost_mat4, guildId);
 
         return true;
     }
@@ -502,10 +502,10 @@ namespace GuildVillageProduction
                     uint32 newLast = row.lastTick + ticks * periodSec;
 
                     WorldDatabase.DirectExecute(
-                        "UPDATE customs.gv_production_active "
+                        "UPDATE {} "
                         "SET last_tick={} "
                         "WHERE guildId={} AND material_id={}",
-                        newLast, guildId, (uint32)row.materialId);
+                        GuildVillage::Table("gv_production_active"), newLast, guildId, (uint32)row.materialId);
 
                     if (hitCap)
                     {
@@ -1154,10 +1154,10 @@ namespace GuildVillageProduction
                 }
 
                 WorldDatabase.DirectExecute(
-                    "UPDATE customs.gv_production_upgrade "
+                    "UPDATE {} "
                     "SET amount_rank = {} "
                     "WHERE guildId={} AND material_id={}",
-                    (uint32)rankToBuy, g->GetId(), (uint32)materialId);
+                    GuildVillage::Table("gv_production_upgrade"), (uint32)rankToBuy, g->GetId(), (uint32)materialId);
 
                 ChatHandler(player->GetSession()).SendSysMessage(
                     T("Upgrade množství zakoupen.", "Amount upgrade purchased."));
@@ -1211,10 +1211,10 @@ namespace GuildVillageProduction
                 }
 
                 WorldDatabase.DirectExecute(
-                    "UPDATE customs.gv_production_upgrade "
+                    "UPDATE {} "
                     "SET speed_rank = {} "
                     "WHERE guildId={} AND material_id={}",
-                    (uint32)rankToBuy, g->GetId(), (uint32)materialId);
+                    GuildVillage::Table("gv_production_upgrade"), (uint32)rankToBuy, g->GetId(), (uint32)materialId);
 
                 ChatHandler(player->GetSession()).SendSysMessage(
                     T("Upgrade rychlosti zakoupen.", "Speed upgrade purchased."));
@@ -1266,8 +1266,8 @@ namespace GuildVillageProduction
     // ===== helper: projede všechny guildy, které právě něco produkují
 	static void TickAllGuilds()
 	{
-		if (QueryResult r = WorldDatabase.Query(
-				"SELECT DISTINCT guildId FROM customs.gv_production_active"))
+        if (QueryResult r = WorldDatabase.Query(
+                "SELECT DISTINCT guildId FROM {}", GuildVillage::Table("gv_production_active")))
 		{
 			do
 			{
@@ -1275,9 +1275,9 @@ namespace GuildVillageProduction
 	
 				if (IsGuildMasterInactive(guildId))
 				{
-					WorldDatabase.DirectExecute(
-						"DELETE FROM customs.gv_production_active WHERE guildId={}",
-						guildId);
+                    WorldDatabase.DirectExecute(
+                        "DELETE FROM {} WHERE guildId={}",
+                        GuildVillage::Table("gv_production_active"), guildId);
 	
 					LOG_INFO("guildvillage",
 							"GuildVillageProduction: guild {} production auto-stopped (GM inactive for too long).",
@@ -1341,9 +1341,9 @@ namespace GuildVillageProduction
     uint8 GetCurrentlyActiveMaterial(uint32 guildId)
     {
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT material_id FROM customs.gv_production_active "
-                "WHERE guildId={} LIMIT 1",
-                guildId))
+            "SELECT material_id FROM {} "
+            "WHERE guildId={} LIMIT 1",
+                GuildVillage::Table("gv_production_active"), guildId))
         {
             return r->Fetch()[0].Get<uint8>(); // 1..4
         }

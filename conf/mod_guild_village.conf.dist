@@ -14,6 +14,29 @@ GuildVillage.Database.Name = customs
 # 0 = require pre-created schema, 1 = create schema automatically.
 GuildVillage.Database.AutoCreate = 0
 
+# Dedicated Guild Village logging.
+# Writes module activity to env/dist/logs/GuildVillage.log.
+#
+# Appender format: Type,LogLevel,Flags,File,Mode
+#   Type 2 = file
+#   LogLevel 5 = allow up to DEBUG in the file appender
+#   Flags 7 = timestamp + level + logger name
+#   Mode a = append
+#
+# Logger.guildvillage controls the effective verbosity for all subcategories such as:
+#   guildvillage.purchase
+#   guildvillage.upgrade
+#   guildvillage.teleport
+#   guildvillage.command
+#   guildvillage.gm
+#   guildvillage.cleanup
+#   guildvillage.trigger
+#   guildvillage.customs
+#
+# Increase Logger.guildvillage to 5 for DEBUG or 6 for TRACE when investigating issues.
+Appender.GuildVillage = 2,5,7,GuildVillage.log,a
+Logger.guildvillage = 4,GuildVillage
+
 # CS: Maximální počet současně existujících vesnic.
 #     -1 = neomezeně
 #      0 = zakázáno (vesnici jde vytvořit jen GM příkazem)

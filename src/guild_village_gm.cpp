@@ -129,7 +129,7 @@ namespace
         // --- CREATURES ---
         if (QueryResult cr = WorldDatabase.Query(
             "SELECT entry, map, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, movementtype "
-            "FROM customs.gv_creature_template WHERE layout_key='{}'", layout_key))
+            "FROM {} WHERE layout_key='{}'", GuildVillage::Table("gv_creature_template"), layout_key))
         {
             do
             {
@@ -197,7 +197,7 @@ namespace
         // --- GAMEOBJECTS ---
         if (QueryResult go = WorldDatabase.Query(
             "SELECT entry, map, position_x, position_y, position_z, orientation, rotation0, rotation1, rotation2, rotation3, spawntimesecs "
-            "FROM customs.gv_gameobject_template WHERE layout_key='{}'", layout_key))
+            "FROM {} WHERE layout_key='{}'", GuildVillage::Table("gv_gameobject_template"), layout_key))
         {
             do
             {
@@ -257,7 +257,7 @@ namespace
             while (go->NextRow());
         }
 
-        LOG_INFO("modules", "GV: (GM reset) Installed base layout '{}' -> creatures={}, gameobjects={}, phaseId={}",
+        LOG_INFO(GuildVillage::LogCategory::GM, "GV: (GM reset) Installed base layout '{}' -> creatures={}, gameobjects={}, phaseId={}",
                  layout_key, cCount, goCount, phaseId);
     }
 
@@ -268,7 +268,7 @@ namespace
 
         // celkový count
         uint32 total = 0;
-        if (QueryResult rc = WorldDatabase.Query("SELECT COUNT(*) FROM customs.gv_guild"))
+        if (QueryResult rc = WorldDatabase.Query("SELECT COUNT(*) FROM {}", GuildVillage::Table("gv_guild")))
             total = (*rc)[0].Get<uint32>();
 
         if (total == 0)
@@ -286,8 +286,8 @@ namespace
 
         std::vector<uint32> guildIds;
         if (QueryResult rl = WorldDatabase.Query(
-                "SELECT guild FROM customs.gv_guild ORDER BY guild LIMIT {} OFFSET {}",
-                kPageSize, offset))
+            "SELECT guild FROM {} ORDER BY guild LIMIT {} OFFSET {}",
+            GuildVillage::Table("gv_guild"), kPageSize, offset))
         {
             do { guildIds.emplace_back(rl->Fetch()[0].Get<uint32>()); } while (rl->NextRow());
         }
@@ -412,6 +412,9 @@ namespace
             }
 
             bool ok = GuildVillage::CreateVillageForGuild_GM(guildId, ignorecap != 0);
+            LOG_INFO(GuildVillage::LogCategory::GM,
+                "GV: GM create command gm='{}' gmGuid={} targetGuildId={} ignoreCapacity={} success={}",
+                plr->GetName(), plr->GetGUID().GetCounter(), guildId, ignorecap != 0, ok);
             handler->SendSysMessage(ok ?
                 T("|cff00ff00[GV-GM]|r Vesnice vytvořena.", "|cff00ff00[GV-GM]|r Village created.") :
                 T("|cffff5555[GV-GM]|r Vytvoření selhalo.", "|cffff5555[GV-GM]|r Creation failed."));
@@ -431,8 +434,8 @@ namespace
 
             // vytáhneme phaseId (kvůli despawnu ze světa a respawn tabulkám)
             uint32 phaseId = 0;
-            if (QueryResult pr = WorldDatabase.Query(
-                    "SELECT phase FROM customs.gv_guild WHERE guild = {} LIMIT 1", guildId))
+                if (QueryResult pr = WorldDatabase.Query(
+                    "SELECT phase FROM {} WHERE guild = {} LIMIT 1", GuildVillage::Table("gv_guild"), guildId))
             {
                 phaseId = (*pr)[0].Get<uint32>();
             }
@@ -449,51 +452,51 @@ namespace
             //    (tohle je duplicitní ochrana + čitelnost; CleanupVillageForGuild to stejně smaže taky)
             //
             WorldDatabase.Execute(
-                "DELETE FROM customs.gv_currency WHERE guildId={}",
-                guildId
+                "DELETE FROM {} WHERE guildId={}",
+                GuildVillage::Table("gv_currency"), guildId
             );
 
             WorldDatabase.Execute(
-                "DELETE FROM customs.gv_upgrades WHERE guildId={}",
-                guildId
+                "DELETE FROM {} WHERE guildId={}",
+                GuildVillage::Table("gv_upgrades"), guildId
             );
 
             WorldDatabase.Execute(
-                "DELETE FROM customs.gv_production_active WHERE guildId={}",
-                guildId
+                "DELETE FROM {} WHERE guildId={}",
+                GuildVillage::Table("gv_production_active"), guildId
             );
 
             WorldDatabase.Execute(
-                "DELETE FROM customs.gv_production_upgrade WHERE guildId={}",
-                guildId
+                "DELETE FROM {} WHERE guildId={}",
+                GuildVillage::Table("gv_production_upgrade"), guildId
             );
 
             // expedice
             WorldDatabase.Execute(
-                "DELETE FROM customs.gv_expedition_active WHERE guildId={}",
-                guildId
+                "DELETE FROM {} WHERE guildId={}",
+                GuildVillage::Table("gv_expedition_active"), guildId
             );
 
             WorldDatabase.Execute(
-                "DELETE FROM customs.gv_expedition_loot WHERE guildId={}",
-                guildId
+                "DELETE FROM {} WHERE guildId={}",
+                GuildVillage::Table("gv_expedition_loot"), guildId
             );
 			
-			WorldDatabase.Execute(
-                "DELETE FROM customs.gv_guild_quests WHERE guildId={}",
-                guildId
+            WorldDatabase.Execute(
+                "DELETE FROM {} WHERE guildId={}",
+                GuildVillage::Table("gv_guild_quests"), guildId
             );
 
             WorldDatabase.Execute(
-                "DELETE FROM customs.gv_expedition_guild WHERE guildId={}",
-                guildId
+                "DELETE FROM {} WHERE guildId={}",
+                GuildVillage::Table("gv_expedition_guild"), guildId
             );
 			
 			// teleportační bod
-			WorldDatabase.Execute(
-				"DELETE FROM customs.gv_teleport_player WHERE guild={}",
-				guildId
-			);
+            WorldDatabase.Execute(
+                "DELETE FROM {} WHERE guild={}",
+                GuildVillage::Table("gv_teleport_player"), guildId
+            );
 
             //
             // 1) Respawn tabulky v characters DB - aby tam nezůstaly sirotčí cooldowny a dead body
@@ -522,7 +525,7 @@ namespace
                 DeleteRespawnsByGuids("creature_respawn", creatureGuids);
                 DeleteRespawnsByGuids("gameobject_respawn", goGuids);
 
-                LOG_INFO("modules",
+                LOG_INFO(GuildVillage::LogCategory::GM,
                          "GV: GM delete cleared respawns (guild={}, phaseId={}, creatures={}, gos={})",
                          guildId, phaseId, creatureGuids.size(), goGuids.size());
             }
@@ -538,6 +541,10 @@ namespace
             //    (tohle volá CleanupVillageForGuild uvnitř GuildVillage::DeleteVillageForGuild_GM)
             //
             bool ok = GuildVillage::DeleteVillageForGuild_GM(guildId);
+
+            LOG_INFO(GuildVillage::LogCategory::GM,
+                "GV: GM delete command gm='{}' gmGuid={} targetGuildId={} phaseId={} success={}",
+                plr->GetName(), plr->GetGUID().GetCounter(), guildId, phaseId, ok);
 
             handler->SendSysMessage(ok ?
                 T("|cff00ff00[GV-GM]|r Vesnice odstraněna (DB + despawn).",
@@ -615,9 +622,9 @@ namespace
             uint64 cur1 = 0, cur2 = 0, cur3 = 0, cur4 = 0;
             bool haveRow = false;
 
-            if (QueryResult r = WorldDatabase.Query(
+                if (QueryResult r = WorldDatabase.Query(
                     "SELECT material1, material2, material3, material4 "
-                    "FROM customs.gv_currency WHERE guildId={}", guildId))
+                    "FROM {} WHERE guildId={}", GuildVillage::Table("gv_currency"), guildId))
             {
                 Field* f = r->Fetch();
                 cur1 = f[0].Get<uint64>();
@@ -660,18 +667,18 @@ namespace
             if (haveRow)
             {
                 WorldDatabase.Execute(
-                    "UPDATE customs.gv_currency "
+                    "UPDATE {} "
                     "SET material1={}, material2={}, material3={}, material4={} "
                     "WHERE guildId={}",
-                    cur1, cur2, cur3, cur4, guildId);
+                    GuildVillage::Table("gv_currency"), cur1, cur2, cur3, cur4, guildId);
             }
             else
             {
                 WorldDatabase.Execute(
-                    "INSERT INTO customs.gv_currency "
+                    "INSERT INTO {} "
                     "(guildId, material1, material2, material3, material4) "
                     "VALUES ({}, {}, {}, {}, {})",
-                    guildId, cur1, cur2, cur3, cur4);
+                    GuildVillage::Table("gv_currency"), guildId, cur1, cur2, cur3, cur4);
             }
 
             // feedback
@@ -687,6 +694,10 @@ namespace
                     "|cff00ff00[GV-GM]|r Guilda {}: {} změněn z {} na {} ({:+d}).",
                     guildId, colName, oldVal, newVal, (int32)delta).c_str());
             }
+
+            LOG_INFO(GuildVillage::LogCategory::GM,
+                "GV: GM set command gm='{}' gmGuid={} targetGuildId={} column='{}' oldValue={} newValue={} delta={}",
+                plr->GetName(), plr->GetGUID().GetCounter(), guildId, colName, oldVal, newVal, delta);
 
             return true;
         }

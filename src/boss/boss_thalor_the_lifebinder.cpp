@@ -148,21 +148,21 @@ struct boss_thalor_the_lifebinder : public ScriptedAI
     void CollectPlayers(std::vector<Player*>& out, float radius = MAX_LOS_RANGE)
     {
         out.clear();
-        Map* map = me->GetMap();
-        if (map)
+        Map* currentMap = me->GetMap();
+        if (currentMap)
         {
-            for (auto const& ref : map->GetPlayers())
+            for (auto const& playerRef : currentMap->GetPlayers())
             {
-                Player* p = ref.GetSource();
-                if (p)
+                Player* player = playerRef.GetSource();
+                if (player)
                 {
-                    if (!p->IsAlive())
+                    if (!player->IsAlive())
                         continue;
-                    if (!me->IsWithinDistInMap(p, radius))
+                    if (!me->IsWithinDistInMap(player, radius))
                         continue;
-                    if (!me->IsWithinLOSInMap(p))
+                    if (!me->IsWithinLOSInMap(player))
                         continue;
-                    out.push_back(p);
+                    out.push_back(player);
                 }
             }
         }
@@ -170,29 +170,29 @@ struct boss_thalor_the_lifebinder : public ScriptedAI
 
     Player* RandomPlayer(float radius = MAX_LOS_RANGE)
     {
-        std::vector<Player*> pl;
-        CollectPlayers(pl, radius);
-        if (pl.empty())
+        std::vector<Player*> players;
+        CollectPlayers(players, radius);
+        if (players.empty())
             return nullptr;
-        uint32 i = urand(0u, (uint32)pl.size() - 1u);
-        return pl[i];
+        uint32 playerIndex = urand(0u, (uint32)players.size() - 1u);
+        return players[playerIndex];
     }
 
     void PickUpToFourMelee(std::vector<Player*>& out)
     {
         out.clear();
-        std::vector<Player*> cands;
-        CollectPlayers(cands, MELEE_PICK_RANGE + 1.0f);
+        std::vector<Player*> meleeCandidates;
+        CollectPlayers(meleeCandidates, MELEE_PICK_RANGE + 1.0f);
 
-        std::sort(cands.begin(), cands.end(), [this](Player* a, Player* b)
+        std::sort(meleeCandidates.begin(), meleeCandidates.end(), [this](Player* leftPlayer, Player* rightPlayer)
         {
-            return me->GetDistance(a) < me->GetDistance(b);
+            return me->GetDistance(leftPlayer) < me->GetDistance(rightPlayer);
         });
 
-        for (Player* p : cands)
+        for (Player* meleePlayer : meleeCandidates)
         {
-            if (me->GetDistance(p) <= MELEE_PICK_RANGE)
-                out.push_back(p);
+            if (me->GetDistance(meleePlayer) <= MELEE_PICK_RANGE)
+                out.push_back(meleePlayer);
             if (out.size() >= 4)
                 break;
         }
@@ -200,18 +200,18 @@ struct boss_thalor_the_lifebinder : public ScriptedAI
 
     Player* PickDistantTarget(float minDist = STORM_MIN_DIST, float maxDist = MAX_LOS_RANGE)
     {
-        std::vector<Player*> cands;
-        CollectPlayers(cands, maxDist);
-        std::vector<Player*> far;
-        for (Player* p : cands)
+        std::vector<Player*> distantCandidates;
+        CollectPlayers(distantCandidates, maxDist);
+        std::vector<Player*> distantPlayers;
+        for (Player* player : distantCandidates)
         {
-            if (me->GetDistance(p) >= minDist)
-                far.push_back(p);
+            if (me->GetDistance(player) >= minDist)
+                distantPlayers.push_back(player);
         }
-        if (far.empty())
+        if (distantPlayers.empty())
             return nullptr;
-        uint32 i = urand(0u, (uint32)far.size() - 1u);
-        return far[i];
+        uint32 targetIndex = urand(0u, (uint32)distantPlayers.size() - 1u);
+        return distantPlayers[targetIndex];
     }
 
     void MaybeApplyLifebloomHeroic()
@@ -219,24 +219,24 @@ struct boss_thalor_the_lifebinder : public ScriptedAI
         if (!ThalorHeroic())
             return;
 
-        Aura* aura = me->GetAura(SPELL_LIFEBLOOM_H);
-        if (aura)
+        Aura* lifebloomAura = me->GetAura(SPELL_LIFEBLOOM_H);
+        if (lifebloomAura)
         {
-            uint8 stacks = aura->GetStackAmount();
-            if (stacks < 3)
-                aura->SetStackAmount(stacks + 1);
-            aura->SetDuration(6000);
-            aura->SetMaxDuration(6000);
+            uint8 currentStacks = lifebloomAura->GetStackAmount();
+            if (currentStacks < 3)
+                lifebloomAura->SetStackAmount(currentStacks + 1);
+            lifebloomAura->SetDuration(6000);
+            lifebloomAura->SetMaxDuration(6000);
         }
         else
         {
             me->AddAura(SPELL_LIFEBLOOM_H, me);
-            Aura* lifebloomAura = me->GetAura(SPELL_LIFEBLOOM_H);
-            if (lifebloomAura)
+            Aura* appliedLifebloomAura = me->GetAura(SPELL_LIFEBLOOM_H);
+            if (appliedLifebloomAura)
             {
-                lifebloomAura->SetDuration(6000);
-                lifebloomAura->SetMaxDuration(6000);
-                lifebloomAura->SetStackAmount(1);
+                appliedLifebloomAura->SetDuration(6000);
+                appliedLifebloomAura->SetMaxDuration(6000);
+                appliedLifebloomAura->SetStackAmount(1);
             }
         }
     }
@@ -293,15 +293,15 @@ struct boss_thalor_the_lifebinder : public ScriptedAI
 
         if (targets.empty())
         {
-            Unit* victim = me->GetVictim();
-            if (victim)
-                if (me->GetDistance(victim) <= MELEE_PICK_RANGE + 1.0f)
-                    me->CastSpell(victim, SPELL_JUDGEMENT_WRATH, false);
+            Unit* currentVictim = me->GetVictim();
+            if (currentVictim)
+                if (me->GetDistance(currentVictim) <= MELEE_PICK_RANGE + 1.0f)
+                    me->CastSpell(currentVictim, SPELL_JUDGEMENT_WRATH, false);
         }
         else
         {
-            for (Player* p : targets)
-                me->CastSpell(p, SPELL_JUDGEMENT_WRATH, false);
+            for (Player* targetPlayer : targets)
+                me->CastSpell(targetPlayer, SPELL_JUDGEMENT_WRATH, false);
         }
 
         MaybeApplyLifebloomHeroic();
@@ -324,9 +324,9 @@ struct boss_thalor_the_lifebinder : public ScriptedAI
 
         me->CastSpell(me, SPELL_STORM_WAVE_H, true);
 
-        Player* farTarget = PickDistantTarget(STORM_MIN_DIST, MAX_LOS_RANGE);
-        if (farTarget)
-            me->CastSpell(farTarget, SPELL_STORM_WAVE_H, false);
+        Player* distantTarget = PickDistantTarget(STORM_MIN_DIST, MAX_LOS_RANGE);
+        if (distantTarget)
+            me->CastSpell(distantTarget, SPELL_STORM_WAVE_H, false);
         else
             me->CastSpell(me, SPELL_STORM_WAVE_H, true);
     }
@@ -336,17 +336,28 @@ struct boss_thalor_the_lifebinder : public ScriptedAI
         if (me->HasUnitState(UNIT_STATE_CASTING))
             return;
 
-        uint32 nextMajor = std::min({ tRootsMs, tWrathMs, tBombMs, tStormMs });
+        uint32 nextMajor = std::min(std::min(tRootsMs, tWrathMs), std::min(tBombMs, tStormMs));
 
         if (nextMajor <= (VENOM_CAST_MS + VENOM_SAFETY_BUFFER))
             return;
 
-        Player* target = RandomPlayer(MAX_LOS_RANGE);
-        if (target)
+        Player* venomTarget = RandomPlayer(MAX_LOS_RANGE);
+        if (venomTarget)
         {
             venomLockMs = VENOM_CAST_MS + 1000;
-            me->CastSpell(target, SPELL_VENOM_BOLT, false);
+            me->CastSpell(venomTarget, SPELL_VENOM_BOLT, false);
         }
+    }
+
+    static void DecTimer(uint32& timer, uint32 diff)
+    {
+        if (timer == TIMER_INF)
+            return;
+
+        if (diff >= timer)
+            timer = 0;
+        else
+            timer -= diff;
     }
 
     // -------- Update --------
@@ -355,16 +366,11 @@ struct boss_thalor_the_lifebinder : public ScriptedAI
         if (!UpdateVictim())
             return;
 
-        auto dec = [](uint32& t, uint32 d)
-        {
-            if (t == TIMER_INF) return;
-            if (d >= t) t = 0; else t -= d;
-        };
-        dec(tRootsMs, diff);
-        dec(tWrathMs, diff);
-        dec(tBombMs,  diff);
-        dec(tStormMs, diff);
-		dec(venomLockMs, diff);
+        DecTimer(tRootsMs, diff);
+        DecTimer(tWrathMs, diff);
+        DecTimer(tBombMs, diff);
+        DecTimer(tStormMs, diff);
+        DecTimer(venomLockMs, diff);
 
         events.Update(diff);
 

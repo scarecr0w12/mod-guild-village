@@ -9,6 +9,7 @@
 #include "DatabaseEnv.h"
 #include "DataMap.h"
 #include "gv_common.h"
+#include "Log.h"
 #include "GameTime.h"
 #include "gv_names.h"
 #include "gv_production.h"
@@ -90,7 +91,7 @@ namespace
     static std::optional<uint32> GetGuildPhase(uint32 guildId)
     {
         if (QueryResult r = WorldDatabase.Query(
-            "SELECT phase FROM customs.gv_guild WHERE guild={}", guildId))
+            "SELECT phase FROM {} WHERE guild={}", GuildVillage::Table("gv_guild"), guildId))
             return (*r)[0].Get<uint32>();
         return std::nullopt;
     }
@@ -237,8 +238,8 @@ namespace
 		double z     = player->GetPositionZ();
 		float  o     = player->GetOrientation();
 	
-		std::string q =
-			"REPLACE INTO customs.gv_teleport_back "
+        std::string q =
+            "REPLACE INTO " + GuildVillage::Table("gv_teleport_back") + " "
 			"(player, map, positionx, positiony, positionz, orientation, set_time) VALUES (" +
 			std::to_string(pguid) + ", " +
 			std::to_string(map)   + ", " +
@@ -255,9 +256,9 @@ namespace
 							/*out*/ uint32& map, /*out*/ double& x, /*out*/ double& y,
 							/*out*/ double& z, /*out*/ float& o)
 	{
-		if (QueryResult res = WorldDatabase.Query(
-				"SELECT map, positionx, positiony, positionz, orientation "
-				"FROM customs.gv_teleport_back WHERE player={} LIMIT 1", pguid))
+        if (QueryResult res = WorldDatabase.Query(
+                "SELECT map, positionx, positiony, positionz, orientation "
+                "FROM {} WHERE player={} LIMIT 1", GuildVillage::Table("gv_teleport_back"), pguid))
 		{
 			Field* f = res->Fetch();
 			map = f[0].Get<uint32>(); x = f[1].Get<double>(); y = f[2].Get<double>();
@@ -270,7 +271,7 @@ namespace
 	// --- po úspěšném návratu smaž bod ---
 	static void ClearBackPoint(uint32 pguid)
 	{
-		WorldDatabase.Execute("DELETE FROM customs.gv_teleport_back WHERE player=" + std::to_string(pguid));
+        WorldDatabase.Execute("DELETE FROM " + GuildVillage::Table("gv_teleport_back") + " WHERE player=" + std::to_string(pguid));
 	}
 	
     // --- rozdělení "arg1 arg2 ..." na 1. token a zbytek
@@ -342,7 +343,7 @@ namespace
         uint32 mapId = player->GetMapId();
 
         if (QueryResult res = WorldDatabase.Query(
-                "SELECT phase FROM customs.gv_guild WHERE guild={}", guildId))
+                "SELECT phase FROM {} WHERE guild={}", GuildVillage::Table("gv_guild"), guildId))
         {
             phaseMask = res->Fetch()[0].Get<uint32>();
         }
@@ -360,7 +361,7 @@ namespace
         float o = player->GetOrientation();
 
         std::string q =
-            "INSERT INTO customs.gv_teleport_player "
+            "INSERT INTO " + GuildVillage::Table("gv_teleport_player") + " "
             "(player, guild, map, positionx, positiony, positionz, orientation, phase) VALUES (" +
             std::to_string(pguid) + ", " +
             std::to_string(guildId) + ", " +
@@ -393,9 +394,9 @@ namespace
         uint32 guildId = player->GetGuildId();
 
         if (QueryResult res = WorldDatabase.Query(
-                "SELECT map, positionx, positiony, positionz, orientation, phase "
-                "FROM customs.gv_teleport_player WHERE player={} AND guild={} LIMIT 1",
-                pguid, guildId))
+            "SELECT map, positionx, positiony, positionz, orientation, phase "
+            "FROM {} WHERE player={} AND guild={} LIMIT 1",
+                GuildVillage::Table("gv_teleport_player"), pguid, guildId))
         {
             Field* f = res->Fetch();
             map       = f[0].Get<uint32>();
@@ -472,7 +473,7 @@ namespace
                 }
                 // 2) fallback z DB (pro případ, že stash není)
                 if (QueryResult res = WorldDatabase.Query(
-                        "SELECT phase FROM customs.gv_guild WHERE guild={}", player->GetGuildId()))
+                        "SELECT phase FROM {} WHERE guild={}", GuildVillage::Table("gv_guild"), player->GetGuildId()))
                 {
                     uint32 ph = res->Fetch()[0].Get<uint32>();
                     if (ph)
@@ -691,9 +692,9 @@ namespace
 
     static bool GuildHasQuestsUpgrade(uint32 guildId)
 	{
-		return WorldDatabase.Query(
-			"SELECT 1 FROM customs.gv_upgrades WHERE guildId={} AND expansion_key='quests' LIMIT 1",
-			guildId) != nullptr;
+        return WorldDatabase.Query(
+            "SELECT 1 FROM {} WHERE guildId={} AND expansion_key='quests' LIMIT 1",
+            GuildVillage::Table("gv_upgrades"), guildId) != nullptr;
 	}
 
     // pomocné: parsování HH:MM a výpočet next TS (stejně jako v quests.cpp)
@@ -808,26 +809,26 @@ namespace
             return;
 
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT next_rotation_at FROM customs.gv_guild_quests "
-                "WHERE guildId={} AND reset_type={} LIMIT 1", guildId, (uint32)rt))
+            "SELECT next_rotation_at FROM {} "
+                "WHERE guildId={} AND reset_type={} LIMIT 1", GuildVillage::Table("gv_guild_quests"), guildId, (uint32)rt))
         {
             uint32 until = r->Fetch()[0].Get<uint32>();
             if (until > uint32(time(nullptr)))
                 return;
         }
 
-		if (QueryResult q = WorldDatabase.Query(
-				"SELECT c.id, c.quest_count "
-				"FROM customs.gv_quest_catalog c "
+        if (QueryResult q = WorldDatabase.Query(
+                "SELECT c.id, c.quest_count "
+                "FROM {} c "
 				"WHERE c.enabled=1 "
 				"  AND c.reset_type='{}' "
 				"  AND (c.required_expansion IS NULL "
 				"       OR c.required_expansion='' "
-				"       OR EXISTS (SELECT 1 FROM customs.gv_upgrades ug "
+                "       OR EXISTS (SELECT 1 FROM {} ug "
 				"                  WHERE ug.guildId={} "
 				"                    AND ug.expansion_key=c.required_expansion)) "
 				"ORDER BY RAND() LIMIT 1",
-				ResetName(rt), guildId))
+                GuildVillage::Table("gv_quest_catalog"), GuildVillage::Table("gv_upgrades"), ResetName(rt), guildId))
 		{
 			Field* f = q->Fetch();
 			uint32 qid  = f[0].Get<uint32>();
@@ -837,11 +838,11 @@ namespace
 			uint32 next = (rt == ResetType::Daily) ? CalcNextDailyResetTS() : CalcNextWeeklyResetTS();
 			if (!next || next <= now) next = now + (rt == ResetType::Daily ? 86400u : 7u*86400u);
 	
-			WorldDatabase.DirectExecute(Acore::StringFormat(
-				"REPLACE INTO customs.gv_guild_quests "
+            WorldDatabase.DirectExecute(Acore::StringFormat(
+                "REPLACE INTO {} "
 				"(guildId, reset_type, quest_id, progress, goal, completed, reward_claimed, assigned_at, next_rotation_at) "
 				"VALUES ({}, {}, {}, 0, {}, 0, 0, {}, {})",
-				guildId, (uint32)rt, qid, goal, now, next).c_str());
+                GuildVillage::Table("gv_guild_quests"), guildId, (uint32)rt, qid, goal, now, next).c_str());
 		}
     }
 
@@ -901,9 +902,9 @@ namespace
 	{
 		std::string label = (LangOpt()==Lang::EN) ? "Reward: " : "Odměna: ";
 	
-		if (QueryResult r = WorldDatabase.Query(
-				"SELECT reward1, reward1_count, reward2, reward2_count, reward3, reward3_count, reward4, reward4_count, reward5, reward5_count "
-				"FROM customs.gv_quest_catalog WHERE id={}", questId))
+        if (QueryResult r = WorldDatabase.Query(
+                "SELECT reward1, reward1_count, reward2, reward2_count, reward3, reward3_count, reward4, reward4_count, reward5, reward5_count "
+                "FROM {} WHERE id={}", GuildVillage::Table("gv_quest_catalog"), questId))
 		{
 			Field* f = r->Fetch();
 			std::vector<std::string> parts;
@@ -956,14 +957,14 @@ namespace
 	{
 		std::vector<CmdGuildQuestRow> out;
 	
-		if (QueryResult r = WorldDatabase.Query(
-				"SELECT g.slot, g.quest_id, g.progress, g.goal, g.completed, "
-				"       c.info_cs, c.info_en, c.quest_name_cs, c.quest_name_en "
-				"FROM customs.gv_guild_quests g "
-				"LEFT JOIN customs.gv_quest_catalog c ON c.id=g.quest_id "
-				"WHERE g.guildId={} AND g.reset_type={} "
-				"ORDER BY g.slot ASC",
-				guildId, (uint32)rt))
+        if (QueryResult r = WorldDatabase.Query(
+                "SELECT g.slot, g.quest_id, g.progress, g.goal, g.completed, "
+                "       c.info_cs, c.info_en, c.quest_name_cs, c.quest_name_en "
+                "FROM {} g "
+                "LEFT JOIN {} c ON c.id=g.quest_id "
+                "WHERE g.guildId={} AND g.reset_type={} "
+                "ORDER BY g.slot ASC",
+                GuildVillage::Table("gv_guild_quests"), GuildVillage::Table("gv_quest_catalog"), guildId, (uint32)rt))
 		{
 			do
 			{
@@ -1343,6 +1344,10 @@ Alias: |cff00ff00.v aoeloot|r)");
 				// návrat – po úspěchu smazat bod
 				player->TeleportTo(map, x, y, z, o);
 				ClearBackPoint(pguid);
+
+                LOG_INFO(GuildVillage::LogCategory::Teleport,
+                    "GV: Command back teleport player='{}' playerGuid={} guildId={} map={} x={} y={} z={}",
+                    player->GetName(), player->GetGUID().GetCounter(), player->GetGuildId(), map, x, y, z);
 		
 				handler->SendSysMessage(T("Teleportuji zpět na poslední pozici mimo vesnici…",
 										"Teleporting back to your last position outside the village…"));
@@ -1361,6 +1366,10 @@ Alias: |cff00ff00.v aoeloot|r)");
 		
 				if (res.has_value())
 				{
+                    LOG_INFO(GuildVillage::LogCategory::Command,
+                        "GV: AoE loot toggled player='{}' playerGuid={} guildId={} enabled={}",
+                        player->GetName(), player->GetGUID().GetCounter(), player->GetGuildId(), *res);
+
 					if (*res)
 					{
 						handler->SendSysMessage(
@@ -1398,6 +1407,10 @@ Alias: |cff00ff00.v aoeloot|r)");
                 // ".village tp set" => uložit osobní bod
                 if (!rest.empty() && IsSetArg(Lower(rest)))
                 {
+                    LOG_INFO(GuildVillage::LogCategory::Teleport,
+                        "GV: Command personal teleport set attempt player='{}' playerGuid={} guildId={} map={} x={} y={} z={}",
+                        player->GetName(), player->GetGUID().GetCounter(), player->GetGuildId(),
+                        player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
                     SavePersonalVillageTp(player, handler);
                     return true;
                 }
@@ -1441,8 +1454,8 @@ Alias: |cff00ff00.v aoeloot|r)");
                 double xDef = 0, yDef = 0, zDef = 0; float oDef = 0.f;
 
                 if (QueryResult res = WorldDatabase.Query(
-                        "SELECT map, positionx, positiony, positionz, orientation, phase "
-                        "FROM customs.gv_guild WHERE guild={}", player->GetGuildId()))
+                    "SELECT map, positionx, positiony, positionz, orientation, phase "
+                        "FROM {} WHERE guild={}", GuildVillage::Table("gv_guild"), player->GetGuildId()))
                 {
                     Field* f = res->Fetch();
                     mapDef      = f[0].Get<uint32>();
@@ -1472,6 +1485,11 @@ Alias: |cff00ff00.v aoeloot|r)");
                 stash->phaseMask = usePhase;
 				
 				SaveBackPointIfEligible(player);
+
+                LOG_INFO(GuildVillage::LogCategory::Teleport,
+                    "GV: Command village teleport player='{}' playerGuid={} guildId={} usePersonal={} map={} phaseId={} x={} y={} z={}",
+                    player->GetName(), player->GetGUID().GetCounter(), player->GetGuildId(),
+                    hasPersonal, useMap, usePhase, useX, useY, useZ);
 				
                 player->TeleportTo(useMap, useX, useY, useZ, useO);
                 handler->SendSysMessage(

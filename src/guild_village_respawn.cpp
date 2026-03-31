@@ -25,7 +25,7 @@ static bool LoadVillageRow(uint32 guildId, uint32& map, float& x, float& y, floa
 {
     if (QueryResult res = WorldDatabase.Query(
         "SELECT map, positionx, positiony, positionz, orientation, phase "
-        "FROM customs.gv_guild WHERE guild={}", guildId))
+        "FROM {} WHERE guild={}", GuildVillage::Table("gv_guild"), guildId))
     {
         Field* f = res->Fetch();
         map    = f[0].Get<uint32>();

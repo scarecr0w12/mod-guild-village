@@ -95,18 +95,18 @@ namespace GuildVillage
             a1=add1; a2=add2; a3=add3; a4=add4;
             if (a1||a2||a3||a4)
             {
-                WorldDatabase.DirectExecute(Acore::StringFormat(
-                    "UPDATE customs.gv_currency SET "
+				WorldDatabase.DirectExecute(Acore::StringFormat(
+					"UPDATE {} SET "
                     "material1=material1+{}, material2=material2+{}, material3=material3+{}, material4=material4+{}, last_update=NOW() "
-                    "WHERE guildId={}", a1,a2,a3,a4,guildId).c_str());
+					"WHERE guildId={}", Table("gv_currency"), a1,a2,a3,a4,guildId).c_str());
             }
             return {a1,a2,a3,a4};
         }
 
         uint32 cap1 = CapMaterial1(), cap2 = CapMaterial2(), cap3 = CapMaterial3(), cap4 = CapMaterial4();
         uint32 cur1=0,cur2=0,cur3=0,cur4=0;
-        if (QueryResult q = WorldDatabase.Query(
-                "SELECT material1, material2, material3, material4 FROM customs.gv_currency WHERE guildId={}", guildId))
+		if (QueryResult q = WorldDatabase.Query(
+			"SELECT material1, material2, material3, material4 FROM {} WHERE guildId={}", Table("gv_currency"), guildId))
         {
             Field* f = q->Fetch();
             cur1=f[0].Get<uint32>(); cur2=f[1].Get<uint32>(); cur3=f[2].Get<uint32>(); cur4=f[3].Get<uint32>();
@@ -120,10 +120,10 @@ namespace GuildVillage
 
         if (a1||a2||a3||a4)
         {
-            WorldDatabase.DirectExecute(Acore::StringFormat(
-                "UPDATE customs.gv_currency SET "
+			WorldDatabase.DirectExecute(Acore::StringFormat(
+				"UPDATE {} SET "
                 "material1=material1+{}, material2=material2+{}, material3=material3+{}, material4=material4+{}, last_update=NOW() "
-                "WHERE guildId={}", a1,a2,a3,a4,guildId).c_str());
+				"WHERE guildId={}", Table("gv_currency"), a1,a2,a3,a4,guildId).c_str());
         }
         return {a1,a2,a3,a4};
     }
@@ -136,8 +136,8 @@ namespace GuildVillage
     static bool GuildHasQuestsUpgrade(uint32 guildId)
 	{
 		return WorldDatabase.Query(
-			"SELECT 1 FROM customs.gv_upgrades WHERE guildId={} AND expansion_key='quests' LIMIT 1",
-			guildId) != nullptr;
+			"SELECT 1 FROM {} WHERE guildId={} AND expansion_key='quests' LIMIT 1",
+			Table("gv_upgrades"), guildId) != nullptr;
 	}
 
     // whitelist WotLK 5man dungeony
@@ -271,9 +271,9 @@ namespace GuildVillage
 		{
 			// 1) Platný quest v tomhle slotu?
 			if (QueryResult r = WorldDatabase.Query(
-					"SELECT next_rotation_at FROM customs.gv_guild_quests "
+					"SELECT next_rotation_at FROM {} "
 					"WHERE guildId={} AND reset_type={} AND slot={} LIMIT 1",
-					guildId, (uint32)rt, (uint32)slot))
+					Table("gv_guild_quests"), guildId, (uint32)rt, (uint32)slot))
 			{
 				uint32 until = r->Fetch()[0].Get<uint32>();
 				if (until > now)
@@ -283,39 +283,39 @@ namespace GuildVillage
 			// 2) Vybrat nový quest
 			if (QueryResult q = WorldDatabase.Query(
 				"SELECT c.id, c.quest_count "
-				"FROM customs.gv_quest_catalog c "
+				"FROM {} c "
 				"WHERE c.enabled=1 "
 				"  AND c.reset_type='{}' "
 				"  AND (c.required_expansion IS NULL "
 				"       OR c.required_expansion='' "
-				"       OR EXISTS (SELECT 1 FROM customs.gv_upgrades ug "
+				"       OR EXISTS (SELECT 1 FROM {} ug "
 				"                  WHERE ug.guildId={} "
 				"                    AND ug.expansion_key=c.required_expansion)) "
 				// (1) zákaz stejného quest_id v tomtéž reset_type (aktivní)
 				"  AND NOT EXISTS (SELECT 1 "
-				"                  FROM customs.gv_guild_quests g "
+				"                  FROM {} g "
 				"                  WHERE g.guildId={} "
 				"                    AND g.reset_type={} "
 				"                    AND g.quest_id = c.id "
 				"                    AND g.next_rotation_at > {}) "
 				// (2) zákaz stejného quest_type v tomtéž reset_type (jiný slot, aktivní)
 				"  AND NOT EXISTS (SELECT 1 "
-				"                  FROM customs.gv_guild_quests g "
-				"                  LEFT JOIN customs.gv_quest_catalog cc ON cc.id=g.quest_id "
+				"                  FROM {} g "
+				"                  LEFT JOIN {} cc ON cc.id=g.quest_id "
 				"                  WHERE g.guildId={} "
 				"                    AND g.reset_type={} "
 				"                    AND g.next_rotation_at > {} "
 				"                    AND cc.quest_type = c.quest_type) "
 				// (3) zákaz stejného quest_type v druhém reset_type (aktivní)
 				"  AND NOT EXISTS (SELECT 1 "
-				"                  FROM customs.gv_guild_quests g2 "
-				"                  LEFT JOIN customs.gv_quest_catalog cc2 ON cc2.id=g2.quest_id "
+				"                  FROM {} g2 "
+				"                  LEFT JOIN {} cc2 ON cc2.id=g2.quest_id "
 				"                  WHERE g2.guildId={} "
 				"                    AND g2.reset_type<>{} "
 				"                    AND g2.next_rotation_at > {} "
 				"                    AND cc2.quest_type = c.quest_type) "
 				"ORDER BY RAND() LIMIT 1",
-				ResetName(rt),            // {}
+				Table("gv_quest_catalog"), Table("gv_upgrades"), Table("gv_guild_quests"), Table("gv_guild_quests"), Table("gv_quest_catalog"), Table("gv_guild_quests"), Table("gv_quest_catalog"), ResetName(rt),
 				guildId,                  // {}
 				guildId, (uint32)rt, now, // {}, {}, {}
 				guildId, (uint32)rt, now, // {}, {}, {}
@@ -332,26 +332,26 @@ namespace GuildVillage
 					next = now + (rt == ResetType::Daily ? 86400u : 7u * 86400u);
 	
 				WorldDatabase.DirectExecute(Acore::StringFormat(
-					"REPLACE INTO customs.gv_guild_quests "
+					"REPLACE INTO {} "
 					"(guildId, reset_type, slot, quest_id, progress, goal, completed, reward_claimed, assigned_at, next_rotation_at) "
 					"VALUES ({}, {}, {}, {}, 0, {}, 0, 0, {}, {})",
-					guildId, (uint32)rt, (uint32)slot, qid, goal, now, next).c_str());
+					Table("gv_guild_quests"), guildId, (uint32)rt, (uint32)slot, qid, goal, now, next).c_str());
 			}
 			else
 			{
 				// nic vhodného → slot prázdný
 				WorldDatabase.DirectExecute(Acore::StringFormat(
-					"DELETE FROM customs.gv_guild_quests "
+					"DELETE FROM {} "
 					"WHERE guildId={} AND reset_type={} AND slot={}",
-					guildId, (uint32)rt, (uint32)slot).c_str());
+					Table("gv_guild_quests"), guildId, (uint32)rt, (uint32)slot).c_str());
 			}
 		}
 	
 		// Oříznout přebytečné sloty (když se sníží amount)
 		WorldDatabase.DirectExecute(Acore::StringFormat(
-			"DELETE FROM customs.gv_guild_quests "
+			"DELETE FROM {} "
 			"WHERE guildId={} AND reset_type={} AND slot>{}",
-			guildId, (uint32)rt, (uint32)count).c_str());
+			Table("gv_guild_quests"), guildId, (uint32)rt, (uint32)count).c_str());
 	}
 	
 	// Exportovaný helper pro ostatní části modu (commands atd.)
@@ -432,11 +432,11 @@ namespace GuildVillage
 				"SELECT g.slot, g.quest_id, g.progress, g.goal, g.completed, g.next_rotation_at, "
 				"       c.info_cs, c.info_en, c.quest_type, c.creature_entry, c.item_entry, c.creature_type, "
 				"       c.quest_name_cs, c.quest_name_en "
-				"FROM customs.gv_guild_quests g "
-				"LEFT JOIN customs.gv_quest_catalog c ON c.id=g.quest_id "
+				"FROM {} g "
+				"LEFT JOIN {} c ON c.id=g.quest_id "
 				"WHERE g.guildId={} AND g.reset_type={} "
 				"ORDER BY g.slot ASC",
-				guildId, (uint32)rt))
+				Table("gv_guild_quests"), Table("gv_quest_catalog"), guildId, (uint32)rt))
 		{
 			do
 			{
@@ -573,9 +573,9 @@ namespace GuildVillage
     // Vystavovací řádek do gossipu
     static std::string BuildRewardLine(uint32 questId)
     {
-        if (QueryResult r = WorldDatabase.Query(
-                "SELECT reward1, reward1_count, reward2, reward2_count, reward3, reward3_count, reward4, reward4_count, reward5, reward5_count "
-                "FROM customs.gv_quest_catalog WHERE id={}", questId))
+		if (QueryResult r = WorldDatabase.Query(
+			"SELECT reward1, reward1_count, reward2, reward2_count, reward3, reward3_count, reward4, reward4_count, reward5, reward5_count "
+			"FROM {} WHERE id={}", Table("gv_quest_catalog"), questId))
         {
             Field* f = r->Fetch();
             std::vector<std::string> parts;
@@ -771,9 +771,9 @@ namespace GuildVillage
 
         std::vector<std::pair<uint32,uint32>> itemRewards;
 
-        if (QueryResult r = WorldDatabase.Query(
-                "SELECT reward1, reward1_count, reward2, reward2_count, reward3, reward3_count, reward4, reward4_count, reward5, reward5_count "
-                "FROM customs.gv_quest_catalog WHERE id={}", questId))
+		if (QueryResult r = WorldDatabase.Query(
+			"SELECT reward1, reward1_count, reward2, reward2_count, reward3, reward3_count, reward4, reward4_count, reward5, reward5_count "
+			"FROM {} WHERE id={}", Table("gv_quest_catalog"), questId))
         {
             Field* f = r->Fetch();
 
@@ -880,9 +880,9 @@ namespace GuildVillage
 	
 		// alternativa?
 		return WorldDatabase.Query(
-			"SELECT 1 FROM customs.gv_quest_creature_multi "
+			"SELECT 1 FROM {} "
 			"WHERE quest_id={} AND creature_entry={} LIMIT 1",
-			questId, killEntry
+			Table("gv_quest_creature_multi"), questId, killEntry
 		) != nullptr;
 	}
 
@@ -903,11 +903,11 @@ namespace GuildVillage
 		if (QueryResult r = WorldDatabase.Query(
 			"SELECT g.quest_id, g.progress, g.goal, g.completed, "
 			"       c.quest_type, IFNULL(c.creature_entry,0), IFNULL(c.item_entry,0), c.creature_type, "
-			"       c.quest_name_cs, c.quest_name_en "            // NOVÉ
-			"FROM customs.gv_guild_quests g "
-			"LEFT JOIN customs.gv_quest_catalog c ON c.id=g.quest_id "
+			"       c.quest_name_cs, c.quest_name_en "
+			"FROM {} g "
+			"LEFT JOIN {} c ON c.id=g.quest_id "
 			"WHERE g.guildId={} AND g.reset_type={}",
-			guildId, (uint32)rt))
+			Table("gv_guild_quests"), Table("gv_quest_catalog"), guildId, (uint32)rt))
 
 		{
 			do
@@ -972,10 +972,10 @@ namespace GuildVillage
 				bool   nowDone = (newProg >= goal);
 
 				WorldDatabase.DirectExecute(Acore::StringFormat(
-					"UPDATE customs.gv_guild_quests "
+					"UPDATE {} "
 					"SET progress={}, completed={} "
 					"WHERE guildId={} AND reset_type={} AND quest_id={}",
-					newProg, (uint32)nowDone, guildId, (uint32)rt, qid).c_str());
+					Table("gv_guild_quests"), newProg, (uint32)nowDone, guildId, (uint32)rt, qid).c_str());
 				
 				if (!nowDone && actor && actor->GetGuildId() == guildId)
 				{
@@ -999,9 +999,9 @@ namespace GuildVillage
 					RewardApplyResult res = GrantRewardsToGuild(guildId, qid);
 
 					WorldDatabase.DirectExecute(Acore::StringFormat(
-						"UPDATE customs.gv_guild_quests SET reward_claimed=1 "
+						"UPDATE {} SET reward_claimed=1 "
 						"WHERE guildId={} AND reset_type={} AND quest_id={}",
-						guildId, (uint32)rt, qid).c_str());
+						Table("gv_guild_quests"), guildId, (uint32)rt, qid).c_str());
 
 					const bool en = (LangOpt()==Lang::EN);
 					std::string head = (rt == ResetType::Daily)

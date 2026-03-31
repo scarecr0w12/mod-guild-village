@@ -76,7 +76,7 @@ namespace GuildVillage
     {
         std::unordered_set<uint32> usedMasks;
 
-        if (QueryResult res = WorldDatabase.Query("SELECT phase FROM customs.gv_guild"))
+        if (QueryResult res = WorldDatabase.Query("SELECT phase FROM {}", Table("gv_guild")))
         {
             do
             {
@@ -102,7 +102,7 @@ namespace GuildVillage
         std::vector<std::pair<uint32, uint32>> villages;
 
         if (QueryResult res = WorldDatabase.Query(
-                "SELECT guild, phase FROM customs.gv_guild ORDER BY guild"))
+            "SELECT guild, phase FROM {} ORDER BY guild", Table("gv_guild")))
         {
             do
             {
@@ -117,7 +117,7 @@ namespace GuildVillage
 
         if (villages.size() > GuildVillagePhaseCapacity())
         {
-            LOG_ERROR("modules",
+            LOG_ERROR(LogCategory::Cleanup,
                 "GV: Found {} villages but only {} isolated phase masks are available. "
                 "Delete villages or lower GuildVillage.MaxVillages.",
                 villages.size(), GuildVillagePhaseCapacity());
@@ -141,7 +141,7 @@ namespace GuildVillage
                 std::optional<uint32> freePhaseMask = FindFreeVillagePhaseMask(usedMasks);
                 if (!freePhaseMask.has_value())
                 {
-                    LOG_ERROR("modules",
+                    LOG_ERROR(LogCategory::Cleanup,
                         "GV: Unable to allocate an isolated phase mask while normalizing guild {}.",
                         guildId);
                     return;
@@ -162,8 +162,8 @@ namespace GuildVillage
         for (VillagePhaseRewrite const& rewrite : rewrites)
         {
             WorldDatabase.Execute(
-                "UPDATE customs.gv_guild SET phase={} WHERE guild={}",
-                rewrite.newPhaseMask, rewrite.guildId);
+                "UPDATE {} SET phase={} WHERE guild={}",
+                Table("gv_guild"), rewrite.newPhaseMask, rewrite.guildId);
             WorldDatabase.Execute(
                 "UPDATE creature SET phaseMask={} WHERE map={} AND phaseMask={}",
                 rewrite.newPhaseMask, DefMap(), rewrite.oldPhaseMask);
@@ -171,10 +171,10 @@ namespace GuildVillage
                 "UPDATE gameobject SET phaseMask={} WHERE map={} AND phaseMask={}",
                 rewrite.newPhaseMask, DefMap(), rewrite.oldPhaseMask);
             WorldDatabase.Execute(
-                "UPDATE customs.gv_teleport_player SET phase={} WHERE guild={} AND phase={}",
-                rewrite.newPhaseMask, rewrite.guildId, rewrite.oldPhaseMask);
+                "UPDATE {} SET phase={} WHERE guild={} AND phase={}",
+                Table("gv_teleport_player"), rewrite.newPhaseMask, rewrite.guildId, rewrite.oldPhaseMask);
 
-            LOG_INFO("modules",
+            LOG_INFO(LogCategory::Cleanup,
                 "GV: Normalized guild {} phase mask {} -> {}.",
                 rewrite.guildId, rewrite.oldPhaseMask, rewrite.newPhaseMask);
         }
@@ -183,7 +183,7 @@ namespace GuildVillage
     // Aktuální počet vesnic
     static uint32 CountVillages()
     {
-        if (QueryResult r = WorldDatabase.Query("SELECT COUNT(*) FROM customs.gv_guild"))
+        if (QueryResult r = WorldDatabase.Query("SELECT COUNT(*) FROM {}", Table("gv_guild")))
             return (*r)[0].Get<uint32>();
         return 0;
     }
@@ -195,7 +195,7 @@ namespace GuildVillage
     {
         if (QueryResult res = WorldDatabase.Query(
             "SELECT guild, phase, map, positionx, positiony, positionz, orientation "
-            "FROM customs.gv_guild WHERE guild={}", guildId))
+            "FROM {} WHERE guild={}", Table("gv_guild"), guildId))
         {
             Field* f = res->Fetch();
             VillageRow v;
@@ -214,14 +214,14 @@ namespace GuildVillage
     static void EnsureCurrencyRow(uint32 guildId)
     {
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT 1 FROM customs.gv_currency WHERE guildId={}", guildId))
+                "SELECT 1 FROM {} WHERE guildId={}", Table("gv_currency"), guildId))
             return;
 
         WorldDatabase.Execute(
-            "INSERT INTO customs.gv_currency "
+            "INSERT INTO {} "
             "(guildId, material1, material2, material3, material4, last_update) "
             "VALUES ({}, 0, 0, 0, 0, NOW())",
-            guildId
+            Table("gv_currency"), guildId
         );
     }
 
@@ -230,14 +230,14 @@ namespace GuildVillage
     static void EnsureExpeditionGuildRow(uint32 guildId)
     {
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT 1 FROM customs.gv_expedition_guild WHERE guildId={}", guildId))
+                "SELECT 1 FROM {} WHERE guildId={}", Table("gv_expedition_guild"), guildId))
             return;
 
         WorldDatabase.Execute(
-            "INSERT INTO customs.gv_expedition_guild "
+            "INSERT INTO {} "
             "(guildId, heroes_owned, heroes_on_mission, heroes_max, gear_level, last_update) "
             "VALUES ({}, 0, 0, 25, 182, NOW())",
-            guildId
+            Table("gv_expedition_guild"), guildId
         );
     }
 
@@ -249,7 +249,7 @@ namespace GuildVillage
         // --- CREATURES ---
         if (QueryResult cr = WorldDatabase.Query(
             "SELECT entry, map, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, movementtype "
-            "FROM customs.gv_creature_template WHERE layout_key='{}'", layout_key))
+            "FROM {} WHERE layout_key='{}'", Table("gv_creature_template"), layout_key))
         {
             do
             {
@@ -307,7 +307,7 @@ namespace GuildVillage
         // --- GAMEOBJECTS ---
         if (QueryResult go = WorldDatabase.Query(
             "SELECT entry, map, position_x, position_y, position_z, orientation, rotation0, rotation1, rotation2, rotation3, spawntimesecs "
-            "FROM customs.gv_gameobject_template WHERE layout_key='{}'", layout_key))
+            "FROM {} WHERE layout_key='{}'", Table("gv_gameobject_template"), layout_key))
         {
             do
             {
@@ -353,19 +353,19 @@ namespace GuildVillage
             while (go->NextRow());
         }
 
-        LOG_INFO("modules", "GV: Installed base layout '{}' -> creatures={}, gameobjects={}, phaseId={}",
+        LOG_INFO(LogCategory::Action, "GV: Installed base layout '{}' -> creatures={}, gameobjects={}, phaseId={}",
                  layout_key, cCount, goCount, phaseId);
     }
 
     static bool InstallExpansionForGuild(uint32 guildId, uint32 phaseId, std::string const& key)
     {
         if (QueryResult q = WorldDatabase.Query(
-                "SELECT 1 FROM customs.gv_upgrades WHERE guildId={} AND expansion_key='{}'", guildId, key))
+            "SELECT 1 FROM {} WHERE guildId={} AND expansion_key='{}'", Table("gv_upgrades"), guildId, key))
             return false;
 
         if (QueryResult cr = WorldDatabase.Query(
             "SELECT entry, map, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, movementtype "
-            "FROM customs.gv_expansion_creatures WHERE expansion_key='{}'", key))
+            "FROM {} WHERE expansion_key='{}'", Table("gv_expansion_creatures"), key))
         {
             do
             {
@@ -414,7 +414,7 @@ namespace GuildVillage
 
         if (QueryResult go = WorldDatabase.Query(
             "SELECT entry, map, position_x, position_y, position_z, orientation, rotation0, rotation1, rotation2, rotation3, spawntimesecs "
-            "FROM customs.gv_expansion_gameobjects WHERE expansion_key='{}'", key))
+            "FROM {} WHERE expansion_key='{}'", Table("gv_expansion_gameobjects"), key))
         {
             do
             {
@@ -459,9 +459,9 @@ namespace GuildVillage
         }
 
         WorldDatabase.Execute(
-            "INSERT INTO customs.gv_upgrades (guildId, expansion_key, purchased_at) "
+            "INSERT INTO {} (guildId, expansion_key, purchased_at) "
             "VALUES ({}, '{}', UNIX_TIMESTAMP())",
-            guildId, key
+            Table("gv_upgrades"), guildId, key
         );
         return true;
     }
@@ -492,19 +492,19 @@ namespace GuildVillage
     {
         // zjistit phaseId pro guildu
         uint32 phaseId = 0;
-        if (QueryResult r = WorldDatabase.Query("SELECT phase FROM customs.gv_guild WHERE guild={}", guildId))
+        if (QueryResult r = WorldDatabase.Query("SELECT phase FROM {} WHERE guild={}", Table("gv_guild"), guildId))
             phaseId = (*r)[0].Get<uint32>();
 
         // 0) smazat měny / upgrady / produkci / expedice / tp bod
-        WorldDatabase.Execute("DELETE FROM customs.gv_currency           WHERE guildId={}", guildId);
-        WorldDatabase.Execute("DELETE FROM customs.gv_upgrades           WHERE guildId={}", guildId);
-        WorldDatabase.Execute("DELETE FROM customs.gv_production_active  WHERE guildId={}", guildId);
-        WorldDatabase.Execute("DELETE FROM customs.gv_production_upgrade WHERE guildId={}", guildId);
-        WorldDatabase.Execute("DELETE FROM customs.gv_expedition_active  WHERE guildId={}", guildId);
-        WorldDatabase.Execute("DELETE FROM customs.gv_expedition_loot    WHERE guildId={}", guildId);
-        WorldDatabase.Execute("DELETE FROM customs.gv_expedition_guild   WHERE guildId={}", guildId);
-		WorldDatabase.Execute("DELETE FROM customs.gv_guild_quests       WHERE guildId={}", guildId);
-		WorldDatabase.Execute("DELETE FROM customs.gv_teleport_player    WHERE guild={}", guildId);
+        WorldDatabase.Execute("DELETE FROM {} WHERE guildId={}", Table("gv_currency"), guildId);
+        WorldDatabase.Execute("DELETE FROM {} WHERE guildId={}", Table("gv_upgrades"), guildId);
+        WorldDatabase.Execute("DELETE FROM {} WHERE guildId={}", Table("gv_production_active"), guildId);
+        WorldDatabase.Execute("DELETE FROM {} WHERE guildId={}", Table("gv_production_upgrade"), guildId);
+        WorldDatabase.Execute("DELETE FROM {} WHERE guildId={}", Table("gv_expedition_active"), guildId);
+        WorldDatabase.Execute("DELETE FROM {} WHERE guildId={}", Table("gv_expedition_loot"), guildId);
+        WorldDatabase.Execute("DELETE FROM {} WHERE guildId={}", Table("gv_expedition_guild"), guildId);
+		WorldDatabase.Execute("DELETE FROM {} WHERE guildId={}", Table("gv_guild_quests"), guildId);
+		WorldDatabase.Execute("DELETE FROM {} WHERE guild={}", Table("gv_teleport_player"), guildId);
 		
 
         if (phaseId)
@@ -537,7 +537,7 @@ namespace GuildVillage
             DeleteRespawnsByGuids("creature_respawn", creatureGuids);
             DeleteRespawnsByGuids("gameobject_respawn", goGuids);
 
-            LOG_INFO("modules",
+            LOG_INFO(LogCategory::Cleanup,
                 "GV: Cleanup respawns for guild {} (phaseId={}, map={}, creatures={}, gos={})",
                 guildId, phaseId, DefMap(), creatureGuids.size(), goGuids.size());
         }
@@ -550,9 +550,9 @@ namespace GuildVillage
         }
 
         // 2) a nakonec záznam vesnice
-        WorldDatabase.Execute("DELETE FROM customs.gv_guild WHERE guild={}", guildId);
+        WorldDatabase.Execute("DELETE FROM {} WHERE guild={}", Table("gv_guild"), guildId);
 
-        LOG_INFO("modules", "GV: Cleanup done for guild {} (phaseId={})", guildId, phaseId);
+        LOG_INFO(LogCategory::Cleanup, "GV: Cleanup done for guild {} (phaseId={})", guildId, phaseId);
     }
 
     // ===== PUBLIC API pro GM =====
@@ -572,21 +572,25 @@ namespace GuildVillage
         std::optional<uint32> phaseId = AllocateVillagePhaseMask();
         if (!phaseId.has_value())
         {
-            LOG_ERROR("modules",
+            LOG_ERROR(LogCategory::Purchase,
                 "GV: Unable to allocate an isolated phase mask for guild {}.",
                 guildId);
             return false;
         }
 
         WorldDatabase.Execute(
-            "INSERT INTO customs.gv_guild (guild, phase, map, positionx, positiony, positionz, orientation, last_update) "
+            "INSERT INTO {} (guild, phase, map, positionx, positiony, positionz, orientation, last_update) "
             "VALUES ({}, {}, {}, {}, {}, {}, {}, NOW())",
-            guildId, *phaseId, DefMap(), DefX(), DefY(), DefZ(), DefO()
+            Table("gv_guild"), guildId, *phaseId, DefMap(), DefX(), DefY(), DefZ(), DefO()
         );
 
         EnsureCurrencyRow(guildId);
         EnsureExpeditionGuildRow(guildId);
         InstallBaseLayout(guildId, *phaseId, "base");
+
+        LOG_INFO(LogCategory::Purchase,
+            "GV: GM village create success guildId={} phaseId={} ignoreCapacity={}",
+            guildId, *phaseId, ignoreCapacity);
         return true;
     }
 
@@ -608,20 +612,34 @@ namespace GuildVillage
 
         uint32 guildId = g->GetId();
 
+        LOG_INFO(LogCategory::Purchase,
+            "GV: Purchase attempt player='{}' playerGuid={} guildId={} guildName='{}' goldCost={} itemId={} itemCount={}",
+            player->GetName(), player->GetGUID().GetCounter(), guildId, g->GetName(),
+            PriceGold(), PriceItemId(), PriceItemCount());
+
         if (LoadVillage(guildId).has_value())
         {
+            LOG_INFO(LogCategory::Purchase,
+                "GV: Purchase denied player='{}' guildId={} reason=already-has-village",
+                player->GetName(), guildId);
             ch.SendSysMessage(T("Tvoje guilda už vesnici vlastní.", "Your guild already owns a village."));
             return false;
         }
 
         if (VillagesDisabled())
         {
+            LOG_INFO(LogCategory::Purchase,
+                "GV: Purchase denied player='{}' guildId={} reason=purchase-disabled",
+                player->GetName(), guildId);
             ch.SendSysMessage(T("Nákup vesnice je momentálně zakázán.", "Village purchase is currently disabled."));
             return false;
         }
 
         if (!VillagesUnlimited() && CountVillages() >= VillagesLimit())
         {
+            LOG_INFO(LogCategory::Purchase,
+                "GV: Purchase denied player='{}' guildId={} reason=capacity-full current={} limit={}",
+                player->GetName(), guildId, CountVillages(), VillagesLimit());
             ch.SendSysMessage(T("Kapacita vesnic je plná. Počkej na uvolnění slotu.",
                                 "Village capacity is full. Please wait for a slot to free up."));
             return false;
@@ -629,11 +647,23 @@ namespace GuildVillage
 
         uint64 needCopper = (uint64)PriceGold() * 10000ULL;
         if (PriceGold() > 0 && player->GetMoney() < needCopper)
-        { ch.SendSysMessage(T("Nemáš dost zlata.", "You don't have enough gold.")); return false; }
+        {
+            LOG_INFO(LogCategory::Purchase,
+                "GV: Purchase denied player='{}' guildId={} reason=insufficient-gold playerMoney={} requiredCopper={}",
+                player->GetName(), guildId, player->GetMoney(), needCopper);
+            ch.SendSysMessage(T("Nemáš dost zlata.", "You don't have enough gold."));
+            return false;
+        }
 
         if (PriceItemId() > 0 && PriceItemCount() > 0 &&
             player->GetItemCount(PriceItemId(), true) < PriceItemCount())
-        { ch.SendSysMessage(T("Chybí požadované itemy.", "Missing required items.")); return false; }
+        {
+            LOG_INFO(LogCategory::Purchase,
+                "GV: Purchase denied player='{}' guildId={} reason=missing-items itemId={} owned={} required={}",
+                player->GetName(), guildId, PriceItemId(), player->GetItemCount(PriceItemId(), true), PriceItemCount());
+            ch.SendSysMessage(T("Chybí požadované itemy.", "Missing required items."));
+            return false;
+        }
 
         if (needCopper > 0) player->ModifyMoney(-(int64)needCopper);
         if (PriceItemId() > 0 && PriceItemCount() > 0) player->DestroyItemCount(PriceItemId(), PriceItemCount(), true);
@@ -641,6 +671,9 @@ namespace GuildVillage
         std::optional<uint32> phaseId = AllocateVillagePhaseMask();
         if (!phaseId.has_value())
         {
+            LOG_ERROR(LogCategory::Purchase,
+                "GV: Purchase failed player='{}' guildId={} reason=no-free-phase",
+                player->GetName(), guildId);
             ch.SendSysMessage(T(
                 "Pro další guildovní vesnici už není volná izolovaná phase.",
                 "No isolated phase is available for another guild village."));
@@ -648,15 +681,20 @@ namespace GuildVillage
         }
 
         WorldDatabase.Execute(
-            "INSERT INTO customs.gv_guild "
+            "INSERT INTO {} "
             "(guild, phase, map, positionx, positiony, positionz, orientation, last_update) "
             "VALUES ({}, {}, {}, {}, {}, {}, {}, NOW())",
-            guildId, *phaseId, DefMap(), DefX(), DefY(), DefZ(), DefO()
+            Table("gv_guild"), guildId, *phaseId, DefMap(), DefX(), DefY(), DefZ(), DefO()
         );
 
         EnsureCurrencyRow(guildId);
         EnsureExpeditionGuildRow(guildId);
         InstallBaseLayout(guildId, *phaseId, "base");
+
+        LOG_INFO(LogCategory::Purchase,
+            "GV: Purchase success player='{}' playerGuid={} guildId={} guildName='{}' phaseId={} usedPersonalItemCost={} usedGoldCost={}",
+            player->GetName(), player->GetGUID().GetCounter(), guildId, g->GetName(),
+            *phaseId, PriceItemId() > 0 && PriceItemCount() > 0, PriceGold());
 
         ch.SendSysMessage(T("Gratuluji! Tvoje guilda zakoupila guildovní vesnici.",
                             "Congratulations! Your guild has purchased a village."));
@@ -672,18 +710,21 @@ namespace GuildVillage
         if (QueryResult r = CharacterDatabase.Query(
             "SELECT g.guildid "
             "FROM guild AS g "
-            "JOIN customs.gv_guild AS v ON v.guild = g.guildid "
+            "JOIN {} AS v ON v.guild = g.guildid "
             "LEFT JOIN characters AS c ON c.guid = g.leaderGuid "
             "WHERE ("
             "      c.guid IS NULL "
             "   OR (c.logout_time > 0 "
             "       AND c.logout_time < UNIX_TIMESTAMP() - {}*24*3600)"
             ")",
-            days))
+            Table("gv_guild"), days))
         {
             do
             {
                 uint32 gid = r->Fetch()[0].Get<uint32>();
+                LOG_WARN(LogCategory::Cleanup,
+                    "GV: Inactive guild cleanup triggered guildId={} cleanupDays={}",
+                    gid, days);
                 CleanupVillageForGuild(gid);
             }
             while (r->NextRow());
@@ -820,6 +861,11 @@ namespace GuildVillage
                     auto* stash = player->CustomData.GetDefault<GVPhaseData>("gv_phase");
                     stash->phaseMask = row->phase;
 
+                    LOG_INFO(LogCategory::Teleport,
+                        "GV: Steward teleport player='{}' playerGuid={} guildId={} map={} phaseId={} x={} y={} z={}",
+                        player->GetName(), player->GetGUID().GetCounter(), g->GetId(),
+                        row->map, row->phase, row->x, row->y, row->z);
+
                     player->TeleportTo(row->map, row->x, row->y, row->z, row->o);
 
                     CloseGossipMenuFor(player);
@@ -907,7 +953,8 @@ namespace GuildVillage
                 if (Player const* p = worldObject->ToPlayer())
                 {
                     if (uint32 gid = p->GetGuildId())
-                        if (QueryResult r = WorldDatabase.Query("SELECT phase FROM customs.gv_guild WHERE guild={}", gid))
+                        if (QueryResult r = WorldDatabase.Query(
+                                "SELECT phase FROM {} WHERE guild={}", Table("gv_guild"), gid))
                             if (uint32 phaseId = (*r)[0].Get<uint32>())
                                 newPhaseMask = phaseId;
                 }
@@ -930,9 +977,9 @@ public:
     {
         GuildVillage::NormalizeVillagePhaseMasks();
 
-        LOG_INFO("modules", "GV: Startup cleanup check begin.");
+        LOG_INFO(LogCategory::Trigger, "GV: Startup cleanup check begin.");
         GuildVillage::CleanupInactiveVillages();
-        LOG_INFO("modules", "GV: Startup cleanup check done.");
+        LOG_INFO(LogCategory::Trigger, "GV: Startup cleanup check done.");
 
         _cleanupTimerMs = CLEANUP_INTERVAL_MS;
     }
@@ -942,9 +989,9 @@ public:
     {
         if (_cleanupTimerMs <= diff)
         {
-            LOG_INFO("modules", "GV: Periodic cleanup check begin.");
+            LOG_INFO(LogCategory::Trigger, "GV: Periodic cleanup check begin.");
             GuildVillage::CleanupInactiveVillages();
-            LOG_INFO("modules", "GV: Periodic cleanup check done.");
+            LOG_INFO(LogCategory::Trigger, "GV: Periodic cleanup check done.");
 
             _cleanupTimerMs = CLEANUP_INTERVAL_MS;
         }

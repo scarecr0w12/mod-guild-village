@@ -86,7 +86,7 @@ namespace GuildVillage
 
     static std::optional<uint32> LoadVillagePhase(uint32 guildId)
     {
-        if (QueryResult r = WorldDatabase.Query("SELECT phase FROM customs.gv_guild WHERE guild={}", guildId))
+        if (QueryResult r = WorldDatabase.Query("SELECT phase FROM {} WHERE guild={}", Table("gv_guild"), guildId))
             return (*r)[0].Get<uint32>();
         return std::nullopt;
     }
@@ -97,14 +97,14 @@ namespace GuildVillage
     {
         // Duplicitní nákup blok
         if (QueryResult q = WorldDatabase.Query(
-                "SELECT 1 FROM customs.gv_upgrades WHERE guildId={} AND expansion_key='{}'", guildId, key))
+            "SELECT 1 FROM {} WHERE guildId={} AND expansion_key='{}'", Table("gv_upgrades"), guildId, key))
             return false;
 
         // --- CREATURES ---
         if (QueryResult cr = WorldDatabase.Query(
-                "SELECT entry, map, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, movementtype "
-                "FROM customs.gv_expansion_creatures WHERE expansion_key='{}' AND (faction=0 OR faction={})",
-                key, (uint32)factionFilter))
+            "SELECT entry, map, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, movementtype "
+            "FROM {} WHERE expansion_key='{}' AND (faction=0 OR faction={})",
+            Table("gv_expansion_creatures"), key, (uint32)factionFilter))
         {
             do
             {
@@ -154,9 +154,9 @@ namespace GuildVillage
 
         // --- GAMEOBJECTS ---
         if (QueryResult go = WorldDatabase.Query(
-                "SELECT entry, map, position_x, position_y, position_z, orientation, rotation0, rotation1, rotation2, rotation3, spawntimesecs "
-                "FROM customs.gv_expansion_gameobjects WHERE expansion_key='{}' AND (faction=0 OR faction={})",
-                key, (uint32)factionFilter))
+            "SELECT entry, map, position_x, position_y, position_z, orientation, rotation0, rotation1, rotation2, rotation3, spawntimesecs "
+            "FROM {} WHERE expansion_key='{}' AND (faction=0 OR faction={})",
+            Table("gv_expansion_gameobjects"), key, (uint32)factionFilter))
         {
             do
             {
@@ -196,10 +196,14 @@ namespace GuildVillage
         }
 
         WorldDatabase.DirectExecute(
-            "INSERT INTO customs.gv_upgrades (guildId, expansion_key, purchased_at) "
+            "INSERT INTO {} (guildId, expansion_key, purchased_at) "
             "VALUES ({}, '{}', UNIX_TIMESTAMP())",
-            guildId, key
+            Table("gv_upgrades"), guildId, key
         );
+
+        LOG_INFO(LogCategory::Upgrade,
+            "GV: Upgrade applied guildId={} expansionKey='{}' phaseId={} factionFilter={}",
+            guildId, key, phaseId, factionFilter);
         return true;
     }
 
@@ -244,14 +248,14 @@ namespace GuildVillage
         }
 
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT id, expansion_key, label_cs, label_en, info_cs, info_en, "
-                "cost_material1, cost_material2, cost_material3, cost_material4, sort_order, "
-                "COALESCE(expansion_key_required, ''), COALESCE(enabled, 1), catalog_npc "
-                "FROM customs.gv_upgrade_catalog "
+            "SELECT id, expansion_key, label_cs, label_en, info_cs, info_en, "
+            "cost_material1, cost_material2, cost_material3, cost_material4, sort_order, "
+            "COALESCE(expansion_key_required, ''), COALESCE(enabled, 1), catalog_npc "
+            "FROM {} "
                 "WHERE category='{}' "
                 "AND (catalog_npc IS NULL OR catalog_npc = 0 OR catalog_npc = {}) "
                 "ORDER BY sort_order, id",
-                catName, (uint32)catalogNpc))
+            Table("gv_upgrade_catalog"), catName, (uint32)catalogNpc))
         {
             do
             {
@@ -301,7 +305,7 @@ namespace GuildVillage
             return std::nullopt;
 
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT label_cs, label_en FROM customs.gv_upgrade_catalog WHERE expansion_key='{}' LIMIT 1", key))
+            "SELECT label_cs, label_en FROM {} WHERE expansion_key='{}' LIMIT 1", Table("gv_upgrade_catalog"), key))
         {
             Field* f = r->Fetch();
             std::string cs = f[0].Get<std::string>();
@@ -317,7 +321,7 @@ namespace GuildVillage
     {
         uint32 mat1=0, mat2=0, mat3=0, mat4=0;
         if (QueryResult q = WorldDatabase.Query(
-                "SELECT material1, material2, material3, material4 FROM customs.gv_currency WHERE guildId={}", guildId))
+            "SELECT material1, material2, material3, material4 FROM {} WHERE guildId={}", Table("gv_currency"), guildId))
         {
             Field* f = q->Fetch();
             mat1=f[0].Get<uint32>(); mat2=f[1].Get<uint32>(); mat3=f[2].Get<uint32>(); mat4=f[3].Get<uint32>();
@@ -331,10 +335,10 @@ namespace GuildVillage
             return false;
 
         WorldDatabase.Execute(
-            "UPDATE customs.gv_currency SET "
+            "UPDATE {} SET "
             "material1 = material1 - {}, material2 = material2 - {}, material3 = material3 - {}, material4 = material4 - {}, last_update = NOW() "
             "WHERE guildId = {}",
-            c.cost_mat1, c.cost_mat2, c.cost_mat3, c.cost_mat4, guildId
+            Table("gv_currency"), c.cost_mat1, c.cost_mat2, c.cost_mat3, c.cost_mat4, guildId
         );
         return true;
     }
@@ -351,7 +355,7 @@ namespace GuildVillage
     {
         std::unordered_set<std::string> out;
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT expansion_key FROM customs.gv_upgrades WHERE guildId={}", guildId))
+            "SELECT expansion_key FROM {} WHERE guildId={}", Table("gv_upgrades"), guildId))
         {
             do { out.insert(r->Fetch()[0].Get<std::string>()); }
             while (r->NextRow());
@@ -362,15 +366,15 @@ namespace GuildVillage
     static bool HasFactionContent(std::string const& key, uint8 factionFilter)
     {
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT 1 FROM customs.gv_expansion_creatures "
-                "WHERE expansion_key='{}' AND (faction=0 OR faction={}) LIMIT 1",
-                key, (uint32)factionFilter))
+            "SELECT 1 FROM {} "
+            "WHERE expansion_key='{}' AND (faction=0 OR faction={}) LIMIT 1",
+            Table("gv_expansion_creatures"), key, (uint32)factionFilter))
             return true;
 
         if (QueryResult r2 = WorldDatabase.Query(
-                "SELECT 1 FROM customs.gv_expansion_gameobjects "
-                "WHERE expansion_key='{}' AND (faction=0 OR faction={}) LIMIT 1",
-                key, (uint32)factionFilter))
+            "SELECT 1 FROM {} "
+            "WHERE expansion_key='{}' AND (faction=0 OR faction={}) LIMIT 1",
+            Table("gv_expansion_gameobjects"), key, (uint32)factionFilter))
             return true;
 
         return false;
@@ -417,9 +421,9 @@ namespace GuildVillage
 
             // materiály pro konkrétní guildu
             uint64 mat1=0, mat2=0, mat3=0, mat4=0;
-            if (QueryResult r = WorldDatabase.Query(
-                    "SELECT material1, material2, material3, material4 FROM customs.gv_currency WHERE guildId={}",
-                    g->GetId()))
+                if (QueryResult r = WorldDatabase.Query(
+                    "SELECT material1, material2, material3, material4 FROM {} WHERE guildId={}",
+                    Table("gv_currency"), g->GetId()))
             {
                 Field* f = r->Fetch();
                 mat1 = f[0].Get<uint64>();
@@ -770,6 +774,9 @@ namespace GuildVillage
 
                 if (Cfg_PurchaseGMOnly() && !isLeader)
                 {
+                    LOG_INFO(LogCategory::Upgrade,
+                        "GV: Upgrade purchase denied player='{}' playerGuid={} guildId={} reason=rank-restricted upgrade='{}'",
+                        player->GetName(), player->GetGUID().GetCounter(), g->GetId(), c.key);
                     ChatHandler(player->GetSession()).SendSysMessage(
                         T("Zakoupit mohou pouze Guild Master a Zástupce.",
                           "Only the Guild Master and Officers can purchase this."));
@@ -779,9 +786,12 @@ namespace GuildVillage
 
                 // nebylo mezitím zakoupeno?
                 if (WorldDatabase.Query(
-                        "SELECT 1 FROM customs.gv_upgrades WHERE guildId={} AND expansion_key='{}' LIMIT 1",
-                        g->GetId(), c.key))
+                    "SELECT 1 FROM {} WHERE guildId={} AND expansion_key='{}' LIMIT 1",
+                    Table("gv_upgrades"), g->GetId(), c.key))
                 {
+                    LOG_INFO(LogCategory::Upgrade,
+                        "GV: Upgrade purchase denied player='{}' playerGuid={} guildId={} reason=already-installed upgrade='{}'",
+                        player->GetName(), player->GetGUID().GetCounter(), g->GetId(), c.key);
                     ChatHandler(player->GetSession()).SendSysMessage(
                         T("Už nainstalováno, nákup zrušen.", "Already installed, purchase canceled."));
                     ShowCategory(player, creature, it->second.cat);
@@ -791,6 +801,9 @@ namespace GuildVillage
                 // validace frakce
                 if (!HasFactionContent(c.key, factionFilter))
                 {
+                    LOG_INFO(LogCategory::Upgrade,
+                        "GV: Upgrade purchase denied player='{}' playerGuid={} guildId={} reason=faction-not-available upgrade='{}' factionFilter={}",
+                        player->GetName(), player->GetGUID().GetCounter(), g->GetId(), c.key, factionFilter);
                     ChatHandler(player->GetSession()).SendSysMessage(
                         T("Tento upgrade není dostupný pro tvou frakci.", "This upgrade is not available for your faction."));
                     ShowCategory(player, creature, it->second.cat);
@@ -802,6 +815,9 @@ namespace GuildVillage
                     auto purchased = LoadPurchasedKeys(g->GetId());
                     if (!c.req_key.empty() && purchased.find(c.req_key) == purchased.end())
                     {
+                        LOG_INFO(LogCategory::Upgrade,
+                            "GV: Upgrade purchase denied player='{}' playerGuid={} guildId={} reason=missing-prerequisite upgrade='{}' prerequisite='{}'",
+                            player->GetName(), player->GetGUID().GetCounter(), g->GetId(), c.key, c.req_key);
                         ChatHandler(player->GetSession()).SendSysMessage(
                             T("Nejprve je potřeba odemknout předchozí rozšíření.", "You must unlock the prerequisite upgrade first."));
                         ShowCategory(player, creature, it->second.cat);
@@ -812,6 +828,10 @@ namespace GuildVillage
                 // 1) odečet měny
                 if (!TryDeductCurrency(g->GetId(), c))
                 {
+                    LOG_INFO(LogCategory::Upgrade,
+                        "GV: Upgrade purchase denied player='{}' playerGuid={} guildId={} reason=insufficient-materials upgrade='{}' cost={}/{}/{}/{}",
+                        player->GetName(), player->GetGUID().GetCounter(), g->GetId(), c.key,
+                        c.cost_mat1, c.cost_mat2, c.cost_mat3, c.cost_mat4);
                     ChatHandler(player->GetSession()).SendSysMessage(
                         T("Nedostatek materiálu.", "Not enough materials."));
                     ShowCategory(player, creature, it->second.cat);
@@ -822,6 +842,9 @@ namespace GuildVillage
                 bool ok = ApplyUpgradeByKey(g->GetId(), phaseId, c.key, factionFilter);
                 if (!ok)
                 {
+                    LOG_WARN(LogCategory::Upgrade,
+                        "GV: Upgrade purchase failed after deduction player='{}' playerGuid={} guildId={} upgrade='{}' phaseId={}",
+                        player->GetName(), player->GetGUID().GetCounter(), g->GetId(), c.key, phaseId);
                     ChatHandler(player->GetSession()).SendSysMessage(
                         T("Už nainstalováno, nákup zrušen.", "Already installed, purchase canceled."));
                     ShowCategory(player, creature, it->second.cat);
@@ -830,6 +853,11 @@ namespace GuildVillage
 
                 ChatHandler(player->GetSession()).SendSysMessage(
                     T("Upgrade nainstalován.", "Upgrade installed."));
+
+                LOG_INFO(LogCategory::Upgrade,
+                    "GV: Upgrade purchase success player='{}' playerGuid={} guildId={} upgrade='{}' phaseId={} factionFilter={} cost={}/{}/{}/{}",
+                    player->GetName(), player->GetGUID().GetCounter(), g->GetId(), c.key,
+                    phaseId, factionFilter, c.cost_mat1, c.cost_mat2, c.cost_mat3, c.cost_mat4);
 
                 ShowCategory(player, creature, it->second.cat);
                 return true;

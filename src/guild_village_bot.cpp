@@ -149,7 +149,8 @@ namespace GuildVillage
         Guild* g = p->GetGuild();
         if (!g) return false;
 
-        if (QueryResult r = WorldDatabase.Query("SELECT 1 FROM customs.gv_guild WHERE guild={}", g->GetId()))
+        if (QueryResult r = WorldDatabase.Query(
+            "SELECT 1 FROM {} WHERE guild={}", Table("gv_guild"), g->GetId()))
             return true;
         return false;
     }
@@ -160,8 +161,8 @@ namespace GuildVillage
             return 0;
 
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT phase FROM customs.gv_guild WHERE guild={}",
-                p->GetGuildId()))
+            "SELECT phase FROM {} WHERE guild={}",
+            Table("gv_guild"), p->GetGuildId()))
             return (*r)[0].Get<uint32>();
 
         return 0;
@@ -173,9 +174,9 @@ namespace GuildVillage
             return false;
 
         if (QueryResult res = WorldDatabase.Query(
-                "SELECT map, positionx, positiony, positionz, orientation, phase "
-                "FROM customs.gv_teleport_player WHERE player={} AND guild={} LIMIT 1",
-                player->GetGUID().GetCounter(), player->GetGuildId()))
+            "SELECT map, positionx, positiony, positionz, orientation, phase "
+            "FROM {} WHERE player={} AND guild={} LIMIT 1",
+            Table("gv_teleport_player"), player->GetGUID().GetCounter(), player->GetGuildId()))
         {
             Field* f = res->Fetch();
             dest.map = f[0].Get<uint32>();

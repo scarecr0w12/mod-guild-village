@@ -74,7 +74,8 @@ namespace GuildVillageExpeditions
     // --------------------------
     static bool GuildHasVillage(uint32 guildId)
     {
-        if (QueryResult r = WorldDatabase.Query("SELECT 1 FROM customs.gv_guild WHERE guild={}", guildId))
+        if (QueryResult r = WorldDatabase.Query(
+                "SELECT 1 FROM {} WHERE guild={}", GuildVillage::Table("gv_guild"), guildId))
             return true;
         return false;
     }
@@ -102,8 +103,8 @@ namespace GuildVillageExpeditions
         out.gearLevel = 182;
 
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT heroes_owned, heroes_on_mission, heroes_max, gear_level "
-                "FROM customs.gv_expedition_guild WHERE guildId={}", guildId))
+            "SELECT heroes_owned, heroes_on_mission, heroes_max, gear_level "
+                "FROM {} WHERE guildId={}", GuildVillage::Table("gv_expedition_guild"), guildId))
         {
             Field* f = r->Fetch();
             out.owned = f[0].Get<uint8>();
@@ -114,10 +115,10 @@ namespace GuildVillageExpeditions
         }
 
         WorldDatabase.DirectExecute(
-            "INSERT INTO customs.gv_expedition_guild "
+            "INSERT INTO {} "
             "(guildId, heroes_owned, heroes_on_mission, heroes_max, gear_level, last_update) "
             "VALUES ({}, 0, 0, 25, 182, NOW())",
-            guildId);
+            GuildVillage::Table("gv_expedition_guild"), guildId);
 
         return out;
     }
@@ -146,9 +147,9 @@ namespace GuildVillageExpeditions
     static std::optional<HeroCatalogRow> LoadCatalogForSlot(uint8 slot)
     {
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT slot, label_cs, label_en, cost_mat1, cost_mat2, cost_mat3, cost_mat4, cost_gold, successchance "
-                "FROM customs.gv_expedition_catalog WHERE slot={} LIMIT 1",
-                (uint32)slot))
+            "SELECT slot, label_cs, label_en, cost_mat1, cost_mat2, cost_mat3, cost_mat4, cost_gold, successchance "
+            "FROM {} WHERE slot={} LIMIT 1",
+                GuildVillage::Table("gv_expedition_catalog"), (uint32)slot))
         {
             Field* f = r->Fetch();
             HeroCatalogRow c;
@@ -186,11 +187,11 @@ namespace GuildVillageExpeditions
     static std::optional<GearTierRow> LoadNextGearTier(uint16 currentTier)
     {
         if (QueryResult r = WorldDatabase.Query(
-                "SELECT tier_ilvl, label_cs, label_en, cost_mat1, cost_mat2, cost_mat3, cost_mat4, cost_gold "
-                "FROM customs.gv_expedition_gear_catalog "
+            "SELECT tier_ilvl, label_cs, label_en, cost_mat1, cost_mat2, cost_mat3, cost_mat4, cost_gold "
+            "FROM {} "
                 "WHERE enabled=1 AND tier_ilvl > {} "
                 "ORDER BY tier_ilvl ASC LIMIT 1",
-                (uint32)currentTier))
+                GuildVillage::Table("gv_expedition_gear_catalog"), (uint32)currentTier))
         {
             Field* f = r->Fetch();
             GearTierRow gt;
@@ -265,9 +266,9 @@ namespace GuildVillageExpeditions
         // načíst guild currency
         uint64 m1 = 0, m2 = 0, m3 = 0, m4 = 0;
         if (QueryResult q = WorldDatabase.Query(
-                "SELECT material1, material2, material3, material4 "
-                "FROM customs.gv_currency WHERE guildId={}",
-                guildId))
+            "SELECT material1, material2, material3, material4 "
+            "FROM {} WHERE guildId={}",
+                GuildVillage::Table("gv_currency"), guildId))
         {
             Field* f = q->Fetch();
             m1 = f[0].Get<uint64>();
@@ -291,14 +292,14 @@ namespace GuildVillageExpeditions
 
         // odečíst currency
         WorldDatabase.DirectExecute(
-            "UPDATE customs.gv_currency SET "
+            "UPDATE {} SET "
             "material1 = material1 - {}, "
             "material2 = material2 - {}, "
             "material3 = material3 - {}, "
             "material4 = material4 - {}, "
             "last_update = NOW() "
             "WHERE guildId = {}",
-            needMat1, needMat2, needMat3, needMat4, guildId);
+            GuildVillage::Table("gv_currency"), needMat1, needMat2, needMat3, needMat4, guildId);
 
         // odečíst goldy
         if (needCopper > 0)
@@ -706,10 +707,10 @@ namespace GuildVillageExpeditions
 
         // success -> heroes_owned++
         WorldDatabase.DirectExecute(
-            "UPDATE customs.gv_expedition_guild "
+            "UPDATE {} "
             "SET heroes_owned = LEAST(heroes_owned + 1, heroes_max), last_update = NOW() "
             "WHERE guildId={}",
-            g->GetId());
+            GuildVillage::Table("gv_expedition_guild"), g->GetId());
 
         if (sConfigMgr->GetOption<bool>("GuildVillage.Expeditions.Notify", true))
         {
@@ -777,9 +778,10 @@ namespace GuildVillageExpeditions
 
         // success -> posunout gear_level
         WorldDatabase.DirectExecute(
-            "UPDATE customs.gv_expedition_guild "
+            "UPDATE {} "
             "SET gear_level = {}, last_update = NOW() "
             "WHERE guildId={}",
+            GuildVillage::Table("gv_expedition_guild"),
             (uint32)gt.tierIlvl,
             g->GetId());
 

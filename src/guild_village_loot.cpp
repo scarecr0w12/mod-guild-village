@@ -93,9 +93,9 @@ namespace GuildVillage
 	{
 		s_loot.clear();
 	
-		if (QueryResult res = WorldDatabase.Query(
-			"SELECT entry, currency, chance, min_amount, max_amount "
-			"FROM customs.gv_loot"))
+        if (QueryResult res = WorldDatabase.Query(
+            "SELECT entry, currency, chance, min_amount, max_amount "
+            "FROM {}", Table("gv_loot")))
 		{
 			do
 			{
@@ -222,16 +222,17 @@ namespace GuildVillage
         if (!CFG_CAP_ENABLED)
         {
             WorldDatabase.DirectExecute(Acore::StringFormat(
-                "UPDATE customs.gv_currency SET "
+                "UPDATE {} SET "
                 "material1=material1+{}, material2=material2+{}, material3=material3+{}, material4=material4+{}, last_update=NOW() "
                 "WHERE guildId={}", g.material1, g.material2, g.material3, g.material4, guildId).c_str());
+                
 
             return g;
         }
 
         uint32 curmat1=0, curmat2=0, curmat3=0, curmat4=0;
         if (QueryResult q = WorldDatabase.Query(
-                "SELECT material1, material2, material3, material4 FROM customs.gv_currency WHERE guildId={}", guildId))
+            "SELECT material1, material2, material3, material4 FROM {} WHERE guildId={}", Table("gv_currency"), guildId))
         {
             Field* f = q->Fetch();
             curmat1=f[0].Get<uint32>(); curmat2=f[1].Get<uint32>();
@@ -258,9 +259,9 @@ namespace GuildVillage
             return applied;
 
         WorldDatabase.DirectExecute(Acore::StringFormat(
-            "UPDATE customs.gv_currency SET "
+            "UPDATE {} SET "
             "material1=material1+{}, material2=material2+{}, material3=material3+{}, material4=material4+{}, last_update=NOW() "
-            "WHERE guildId={}", addmat1, addmat2, addmat3, addmat4, guildId).c_str());
+            "WHERE guildId={}", Table("gv_currency"), addmat1, addmat2, addmat3, addmat4, guildId).c_str());
 
         applied.material1  = addmat1;
         applied.material2   = addmat2;

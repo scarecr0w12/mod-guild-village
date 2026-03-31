@@ -134,7 +134,9 @@ namespace
 			if (!gid) return;
 	
 			// má gilda Quests upgrade?
-			if (!WorldDatabase.Query("SELECT 1 FROM customs.gv_upgrades WHERE guildId={} AND expansion_key='quests' LIMIT 1", gid))
+            if (!WorldDatabase.Query(
+                    "SELECT 1 FROM {} WHERE guildId={} AND expansion_key='quests' LIMIT 1",
+                    GuildVillage::Table("gv_upgrades"), gid))
 				return;
 	
 			if (std::find(out.begin(), out.end(), gid) == out.end())
@@ -177,9 +179,9 @@ namespace
 			if (!gid) return;
 	
 			// kontrola, že guilda má Quests upgrade
-			if (!WorldDatabase.Query(
-					"SELECT 1 FROM customs.gv_upgrades WHERE guildId={} AND expansion_key='quests' LIMIT 1",
-					gid))
+            if (!WorldDatabase.Query(
+                    "SELECT 1 FROM {} WHERE guildId={} AND expansion_key='quests' LIMIT 1",
+                    GuildVillage::Table("gv_upgrades"), gid))
 				return;
 	
 			for (auto const& pr : out)

@@ -150,8 +150,9 @@ namespace GuildVillageAoe
             if (!guildId)
                 return false;
 
-            if (QueryResult res = WorldDatabase.Query(
-                    "SELECT 1 FROM customs.gv_guild WHERE guild={} LIMIT 1", guildId))
+                if (QueryResult res = WorldDatabase.Query(
+                    "SELECT 1 FROM {} WHERE guild={} LIMIT 1",
+                    GuildVillage::Table("gv_guild"), guildId))
                 return true;
 
             return false;
