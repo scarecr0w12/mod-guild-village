@@ -36,7 +36,7 @@ This repository copy is being maintained as an **Enhanced** version focused on:
 - battleground and optional world PvP rewards
 - AoE loot unlock tied to village ownership
 - GM utilities for creation, deletion, listing, and currency adjustment
-- optional playerbot village visit routing
+- optional playerbot village visit routing with farm re-kicks toward non-elite village creature packs
 
 ## Recommended extras
 
@@ -59,6 +59,7 @@ Recent maintenance work has concentrated on:
 - explicit configurable table qualification instead of hardcoded `customs.` usage
 - dedicated Guild Village logging categories for purchase, upgrade, teleport, GM, cleanup, trigger, and customs updater activity
 - clearer persistence and restart troubleshooting guidance
+- safer playerbot village farming flow that nudges bots toward valid non-elite village mobs instead of leaving them idle at the hub
 - documentation cleanup and packaging
 
 ## License

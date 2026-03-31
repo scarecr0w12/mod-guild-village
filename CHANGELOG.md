@@ -13,6 +13,7 @@ The format is intentionally simple and practical for module maintenance.
 - explicit configurable table qualification helper for module-owned schema tables
 - refreshed root/module documentation for the enhanced edition
 - a dedicated changelog for tracking module maintenance work
+- `GuildVillage.PlayerbotVillage.FarmKickSeconds` to periodically re-route visiting playerbots to village farm spots when they stall out of combat
 
 ### Changed
 
@@ -20,12 +21,14 @@ The format is intentionally simple and practical for module maintenance.
 - improved customs updater logging to use the dedicated Guild Village logging categories
 - clarified installation, persistence, schema, and restart troubleshooting guidance in the README files
 - modernized the module’s landing documentation and compatibility notes for Playerbot-oriented environments
+- improved playerbot village routing so visiting bots are moved from the central village hub to real creature spawn areas inside their guild phase
 
 ### Fixed
 
 - corrected remaining hardcoded schema access paths so village-owned data follows `GuildVillage.Database.Name`
 - improved observability around village purchase, teleport, cleanup, GM actions, and upgrade flows
 - reduced the risk of confusing restart behavior caused by opaque schema handling
+- prevented playerbots from being kicked into the stronger elite village packs by restricting automated village farming to the lighter non-elite creature pool
 
 ### Notes
 

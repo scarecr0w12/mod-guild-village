@@ -28,7 +28,7 @@ The module currently includes:
 - optional AoE loot unlock
 - village bosses with optional heroic toggles
 - optional cleanup of villages owned by long-inactive guild masters
-- optional playerbot visit routing
+- optional playerbot visit routing with farm re-kicks for phased village mobs
 - GM administration commands for creation, deletion, listing, and currency edits
 
 ## Persistence and where data is saved
@@ -88,6 +88,33 @@ Key options to review immediately:
 - `GuildVillage.Inactivity.CleanupDays`
 - `GuildVillage.RequireGuildMasterForPurchase`
 - `GuildVillage.HidePurchaseMenuForNonGM`
+- `GuildVillage.PlayerbotVillage.Enable`
+- `GuildVillage.PlayerbotVillage.FarmKickSeconds`
+
+### 2.1 Playerbot village farming
+
+When Playerbot support is present, the module can periodically send guild-owned
+playerbots into their village and re-kick them toward farmable creature spawns.
+
+The current behavior is intentionally module-side only:
+
+- the module does not modify `mod-playerbots`
+- visiting bots are teleported into their guild village phase
+- if they idle at the central village hub, the module periodically relocates
+	them to a random farmable creature spawn in that same phase
+- the automated farm pool is restricted to the lighter non-elite village mobs,
+	not the stronger elite 80+ combat packs
+
+Useful options:
+
+- `GuildVillage.PlayerbotVillage.Enable`
+- `GuildVillage.PlayerbotVillage.TickSeconds`
+- `GuildVillage.PlayerbotVillage.IntervalMinMinutes`
+- `GuildVillage.PlayerbotVillage.IntervalMaxMinutes`
+- `GuildVillage.PlayerbotVillage.StayMinMinutes`
+- `GuildVillage.PlayerbotVillage.StayMaxMinutes`
+- `GuildVillage.PlayerbotVillage.FarmKickSeconds`
+- `GuildVillage.PlayerbotVillage.Debug`
 
 ### 3. Prepare the village schema
 
@@ -208,6 +235,13 @@ Before production rollout, verify behavior against your exact stack, especially 
 - `mod-playerbots`
 - custom world ID ranges
 - existing `customs`-style schemas shared with other modules
+
+For Playerbot-heavy servers, test at least these village cases after updates:
+
+- bots entering and leaving map `37` on schedule
+- bots receiving the correct guild phase inside the village
+- bots farming only the intended non-elite village creature pool
+- bots returning safely after the configured stay window
 
 ## Recommended extras
 

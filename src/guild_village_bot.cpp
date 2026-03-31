@@ -106,6 +106,14 @@ namespace GuildVillage
                 "GuildVillage.PlayerbotVillage.StayMaxMinutes", 20));
     }
 
+    static inline uint32 BotVillageFarmKickSeconds()
+    {
+        return std::max<uint32>(
+            sConfigMgr->GetOption<uint32>(
+                "GuildVillage.PlayerbotVillage.FarmKickSeconds", 90),
+            15);
+    }
+
     static inline time_t Now()
     {
         return GameTime::GetGameTime().count();
@@ -131,6 +139,7 @@ namespace GuildVillage
         time_t nextEvaluationAt = 0;
         time_t nextVillageVisitAt = 0;
         time_t villageVisitEndsAt = 0;
+        time_t nextFarmKickAt = 0;
         bool villageVisitActive = false;
         bool hasReturnPoint = false;
         uint32 lastGuildId = 0;
@@ -140,6 +149,15 @@ namespace GuildVillage
         float returnY = 0.0f;
         float returnZ = 0.0f;
         float returnO = 0.0f;
+    };
+
+    struct VillageFarmDest
+    {
+        uint32 entry = 0;
+        float x = 0.0f;
+        float y = 0.0f;
+        float z = 0.0f;
+        float o = 0.0f;
     };
 
     // Má hráč guildu, která má záznam v customs.gv_guild?
@@ -250,6 +268,7 @@ namespace GuildVillage
 
         state->villageVisitActive = false;
         state->villageVisitEndsAt = 0;
+        state->nextFarmKickAt = 0;
         state->hasReturnPoint = false;
         state->lastGuildId = guildId;
         ScheduleNextVillageVisit(state, now);
@@ -325,11 +344,51 @@ namespace GuildVillage
         return false;
     }
 
+    static bool LoadRandomVillageFarmDestination(
+        Player* player, VillageFarmDest& dest)
+    {
+        if (!player)
+            return false;
+
+        uint32 phaseMask = player->GetPhaseMask();
+        if (!IsUsableVillagePhaseMask(phaseMask))
+            phaseMask = LoadGuildVillagePhase(player);
+
+        if (!IsUsableVillagePhaseMask(phaseMask))
+            return false;
+
+        // Keep playerbots on the lighter village wildlife/resource packs.
+        // The 987402-987410 set contains the stronger elite camp mobs and is
+        // too punishing for solo village visits.
+        static char const* farmEntriesSql =
+            "987412,987413,987414,987415,987416,987418,987419,987420,"
+            "987421";
+
+        if (QueryResult res = WorldDatabase.Query(
+            "SELECT id1, position_x, position_y, position_z, orientation "
+            "FROM creature WHERE map={} AND phaseMask={} AND id1 IN ({}) "
+            "ORDER BY RAND() LIMIT 1",
+            DefMap(), phaseMask, farmEntriesSql))
+        {
+            Field* fields = res->Fetch();
+            dest.entry = fields[0].Get<uint32>();
+            dest.x = fields[1].Get<float>();
+            dest.y = fields[2].Get<float>();
+            dest.z = fields[3].Get<float>();
+            dest.o = fields[4].Get<float>();
+            return true;
+        }
+
+        return false;
+    }
+
 #if GV_HAS_PLAYERBOTS
     static bool IsPlayerbot(Player* player)
     {
         return player && GET_PLAYERBOT_AI(player);
     }
+
+    static void TriggerVillageRpg(Player* player);
 
     static void LogBotVillageEvent(
         Player* player, char const* action, time_t when)
@@ -348,6 +407,42 @@ namespace GuildVillage
             player->CustomData.GetDefault<BotVillageVisitData>("gv_bot_village")
                 ->villageVisitEndsAt);
         (void)when;
+    }
+
+    static void TriggerVillageFarmKick(
+        Player* player, BotVillageVisitData* state, bool force = false)
+    {
+        if (!player || !state)
+            return;
+
+        time_t now = Now();
+        if (!force && state->nextFarmKickAt && now < state->nextFarmKickAt)
+            return;
+
+        state->nextFarmKickAt = now + BotVillageFarmKickSeconds();
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+        if (!botAI || !IsInVillageMap(player) || IsBotVillageBlocked(player))
+            return;
+
+        VillageFarmDest dest;
+        if (!LoadRandomVillageFarmDestination(player, dest))
+            return;
+
+        if (!player->TeleportTo(DefMap(), dest.x, dest.y, dest.z, dest.o))
+            return;
+
+        botAI->DoSpecificAction("attack anything", Event(), true);
+        TriggerVillageRpg(player);
+
+        if (BotVillageDebug())
+        {
+            LOG_INFO(
+                "modules",
+                "GV: Playerbot {} farm kick -> mob {} at map {} ({}, {}, {})",
+                player->GetName(), dest.entry, DefMap(), dest.x, dest.y,
+                dest.z);
+        }
     }
 
     static void TriggerVillageRpg(Player* player)
@@ -414,6 +509,9 @@ namespace GuildVillage
                 }
             }
 
+            if (!IsBotVillageBlocked(player))
+                TriggerVillageFarmKick(player, state);
+
             return;
         }
 
@@ -448,7 +546,9 @@ namespace GuildVillage
         state->villageVisitActive = true;
         state->lastGuildId = guildId;
         ScheduleVillageStay(state, now);
+        state->nextFarmKickAt = 0;
         TriggerVillageRpg(player);
+        TriggerVillageFarmKick(player, state, true);
         LogBotVillageEvent(player, "entered village", now);
     }
 #endif
