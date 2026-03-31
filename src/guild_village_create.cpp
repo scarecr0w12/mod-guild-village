@@ -977,9 +977,9 @@ public:
     {
         GuildVillage::NormalizeVillagePhaseMasks();
 
-        LOG_INFO(LogCategory::Trigger, "GV: Startup cleanup check begin.");
+        LOG_INFO(GuildVillage::LogCategory::Trigger, "GV: Startup cleanup check begin.");
         GuildVillage::CleanupInactiveVillages();
-        LOG_INFO(LogCategory::Trigger, "GV: Startup cleanup check done.");
+        LOG_INFO(GuildVillage::LogCategory::Trigger, "GV: Startup cleanup check done.");
 
         _cleanupTimerMs = CLEANUP_INTERVAL_MS;
     }
@@ -989,9 +989,9 @@ public:
     {
         if (_cleanupTimerMs <= diff)
         {
-            LOG_INFO(LogCategory::Trigger, "GV: Periodic cleanup check begin.");
+            LOG_INFO(GuildVillage::LogCategory::Trigger, "GV: Periodic cleanup check begin.");
             GuildVillage::CleanupInactiveVillages();
-            LOG_INFO(LogCategory::Trigger, "GV: Periodic cleanup check done.");
+            LOG_INFO(GuildVillage::LogCategory::Trigger, "GV: Periodic cleanup check done.");
 
             _cleanupTimerMs = CLEANUP_INTERVAL_MS;
         }
