@@ -20,7 +20,6 @@ SET
   `speed_swim`=1,
   `speed_flight`=1,
   `detection_range`=20,
-  `scale`=1,
   `rank`=0,
   `dmgschool`=0,
   `DamageModifier`=1,
@@ -52,8 +51,7 @@ SET
   `RacialLeader`=0,
   `movementId`=0,
   `RegenHealth`=1,
-  `mechanic_immune_mask`=0,
-  `spell_school_immune_mask`=0,
+  `CreatureImmunitiesId`=0,
   `flags_extra`=0,
   `ScriptName`='',
   `VerifiedBuild`=12340

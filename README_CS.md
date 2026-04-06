@@ -15,5 +15,3 @@ If you arrived here from an older Czech guide, please switch to the English docu
 - dedicated logging setup
 - persistence and restart troubleshooting
 - current enhanced-version notes
-
-

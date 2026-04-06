@@ -24,7 +24,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 15,
-    `scale`                   = 1,
     `rank`                    = 3,
     `dmgschool`               = 0,
     `DamageModifier`          = 35,
@@ -56,8 +55,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 650854271,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2243,
+
     `flags_extra`             = 0,
     `ScriptName`              = 'boss_thranok_the_unyielding',
     `VerifiedBuild`           = 12340
@@ -84,7 +83,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 15,
-    `scale`                   = 1,
     `rank`                    = 3,
     `dmgschool`               = 0,
     `DamageModifier`          = 35,
@@ -116,8 +114,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 650854271,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2243,
+
     `flags_extra`             = 0,
     `ScriptName`              = 'boss_thalor_the_lifebinder',
     `VerifiedBuild`           = 12340
@@ -144,7 +142,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 13,
@@ -176,8 +173,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 1015226896,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2262,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -204,7 +201,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 13,
@@ -236,8 +232,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 1015226896,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2262,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -264,7 +260,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 13,
@@ -296,8 +291,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 1015226896,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2262,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -324,7 +319,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 13,
@@ -356,8 +350,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 1015226896,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2262,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -384,7 +378,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 13,
@@ -416,8 +409,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 1015226896,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2262,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -444,7 +437,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 13,
@@ -476,8 +468,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 1015226896,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2262,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -504,7 +496,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 15,
-    `scale`                   = 1,
     `rank`                    = 3,
     `dmgschool`               = 0,
     `DamageModifier`          = 35,
@@ -536,8 +527,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 650854271,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2243,
+
     `flags_extra`             = 0,
     `ScriptName`              = 'boss_voltrix_the_unbound',
     `VerifiedBuild`           = 12340
@@ -564,7 +555,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 13,
@@ -596,8 +586,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 1015226896,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2262,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -624,7 +614,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 13,
@@ -656,8 +645,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 1015226896,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2262,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -684,7 +673,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 15,
-    `scale`                   = 1,
     `rank`                    = 3,
     `dmgschool`               = 0,
     `DamageModifier`          = 35,
@@ -716,8 +704,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 650854271,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2243,
+
     `flags_extra`             = 0,
     `ScriptName`              = 'boss_thalgron_the_earthshaker',
     `VerifiedBuild`           = 12340
@@ -744,7 +732,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 4,
@@ -776,8 +763,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 0,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 0,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -804,7 +791,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 4,
@@ -836,8 +822,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 0,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 0,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -864,7 +850,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 4,
@@ -896,8 +881,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 0,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 0,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -924,7 +909,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 4,
@@ -956,8 +940,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 0,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 0,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -984,7 +968,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 4,
@@ -1016,8 +999,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 8388624,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2035,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -1044,7 +1027,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 4,
@@ -1076,8 +1058,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 8388624,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 2035,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -1104,7 +1086,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 4,
@@ -1136,8 +1117,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 0,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 0,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -1164,7 +1145,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 4,
@@ -1196,8 +1176,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 0,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 0,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -1224,7 +1204,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 4,
@@ -1256,8 +1235,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 0,
-    `spell_school_immune_mask`= 0,
+    `CreatureImmunitiesId`    = 0,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
@@ -1284,7 +1263,6 @@ SET
     `speed_swim`              = 1,
     `speed_flight`            = 1,
     `detection_range`         = 20,
-    `scale`                   = 1,
     `rank`                    = 2,
     `dmgschool`               = 0,
     `DamageModifier`          = 4,
@@ -1316,8 +1294,8 @@ SET
     `RacialLeader`            = 0,
     `movementId`              = 0,
     `RegenHealth`             = 1,
-    `mechanic_immune_mask`    = 0,
-    `spell_school_immune_mask`= 4,
+    `CreatureImmunitiesId`    = 2301,
+
     `flags_extra`             = 0,
     `ScriptName`              = '',
     `VerifiedBuild`           = 12340
