@@ -4,7 +4,7 @@
 #include "Guild.h"
 #include "DatabaseEnv.h"
 #include "gv_common.h"
-#include "Config.h"
+#include "Configuration/Config.h"
 #include "Log.h"
 
 #include <optional>

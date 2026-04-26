@@ -4,7 +4,7 @@
 #include "Player.h"
 #include "ScriptedCreature.h"
 #include "SpellScript.h"
-#include "Config.h"
+#include "Configuration/Config.h"
 #include "ObjectAccessor.h"
 #include "GossipDef.h"
 #include "ScriptMgr.h"

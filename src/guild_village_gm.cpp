@@ -9,7 +9,7 @@
 #include "gv_common.h"
 #include "Log.h"
 #include "StringFormat.h"
-#include "Config.h"
+#include "Configuration/Config.h"
 
 #include "Maps/MapMgr.h"
 #include "Map.h"

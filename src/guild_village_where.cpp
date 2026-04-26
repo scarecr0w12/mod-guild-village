@@ -1,10 +1,10 @@
 // modules/mod-guild-village/src/guild_village_where.cpp
 
 #include "ScriptMgr.h"
-#include "Config.h"
+#include "Configuration/Config.h"
 #include "Creature.h"
 #include "ScriptedGossip.h"
-#include "GossipDef.h"
+#include "GossipDef.h" // GOSSIP_MAX_MENU_ITEMS (AddMenuItem ASSERT -> SIGSEGV if exceeded)
 #include "Player.h"
 #include "Guild.h"
 #include "Chat.h"
@@ -245,9 +245,12 @@ namespace GuildVillage
         }
 
         auto all = LoadCatalog(cat);
-        std::vector<CatalogRow> list;
-        list.reserve(all.size());
-
+        // Build gossip in one pass: avoid a second vector of CatalogRow (and realloc moves of
+        // many std::strings) — that path showed up under SIGSEGV in memcpy during vector growth.
+        // GossipMenu::AddMenuItem ASSERTs when size > GOSSIP_MAX_MENU_ITEMS (32) before an add;
+        // the next slot is only safe if we leave room for the Back button (max 32 rows + Back = 33).
+        std::size_t shownCount = 0;
+        bool truncated = false;
         for (auto const& c : all)
         {
             if (purchased.find(c.key) == purchased.end())
@@ -256,21 +259,28 @@ namespace GuildVillage
             if (!LoadPoi(c.key, factionFilter).has_value())
                 continue;
 
-            list.push_back(c);
+            if (shownCount >= GOSSIP_MAX_MENU_ITEMS)
+            {
+                truncated = true;
+                break;
+            }
+
+            std::string label = (LangOpt() == Lang::EN ? c.label_en : c.label_cs);
+            AddGossipItemFor(player, GOSSIP_ICON_CHAT, label, GOSSIP_SENDER_MAIN, ACT_WHERE_ITEM_BASE + c.id);
+            ++shownCount;
         }
 
-        if (list.empty())
+        if (truncated)
+            ChatHandler(player->GetSession()).SendSysMessage(
+                T("Seznam je příliš dlouhý; část položek je skrytá (limit menu).",
+                  "The list is too long; some entries are hidden (menu limit)."));
+
+        if (shownCount == 0)
         {
             ChatHandler(player->GetSession()).SendSysMessage(
                 T("V této kategorii nemáš nic zakoupeno.", "You have no purchased items in this category."));
             ShowWhereRoot(player, creature);
             return;
-        }
-
-        for (auto const& c : list)
-        {
-            std::string label = (LangOpt() == Lang::EN ? c.label_en : c.label_cs);
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, label, GOSSIP_SENDER_MAIN, ACT_WHERE_ITEM_BASE + c.id);
         }
 
         AddGossipItemFor(player, GOSSIP_ICON_TAXI, T("Zpět", "Back"), GOSSIP_SENDER_MAIN, ACT_WHERE_ROOT);

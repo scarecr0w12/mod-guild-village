@@ -1,0 +1,10 @@
+## Interface: 30300
+## Title: Guild Village Helper
+## Notes: Teleport button and future Guild Village integration
+## Author: BeardBear
+## Version: 2.1
+## SavedVariables: GuildVillageDB
+## SavedVariablesPerCharacter: GVH_WM_SV
+
+GuildVillageHelper.lua
+GuildVillageHelper_Minimap.lua

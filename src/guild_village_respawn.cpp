@@ -7,7 +7,7 @@
 #include "gv_common.h"
 #include "DataMap.h"
 #include "Chat.h"
-#include "Config.h"
+#include "Configuration/Config.h"
 
 // ====== Configuration: village map (shared across the module) ======
 static inline uint32 DefMap()

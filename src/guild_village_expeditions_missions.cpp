@@ -1,7 +1,7 @@
 // modules/mod-guild-village/src/guild_village_expeditions_missions.cpp
 
 #include "ScriptMgr.h"
-#include "Config.h"
+#include "Configuration/Config.h"
 #include "Creature.h"
 #include "ScriptedGossip.h"
 #include "GossipDef.h"

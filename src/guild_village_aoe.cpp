@@ -7,7 +7,7 @@
 #include "WorldPacket.h"
 #include "Player.h"
 #include "Creature.h"
-#include "Config.h"
+#include "Configuration/Config.h"
 #include "Map.h"
 #include "Corpse.h"
 #include "Group.h"
@@ -742,7 +742,7 @@ namespace
     public:
         guild_village_AoeLootServer() : ServerScript("guild_village_AoeLootServer") { }
 
-        bool CanPacketReceive(WorldSession* session, WorldPacket& packet) override
+        bool CanPacketReceive(WorldSession* session, WorldPacket const& packet) override
         {
             if (packet.GetOpcode() != CMSG_LOOT)
                 return true;
@@ -761,7 +761,8 @@ namespace
                 return true;
 
             ObjectGuid targetGuid;
-            packet >> targetGuid;
+            WorldPacket packetCopy(packet);
+            packetCopy >> targetGuid;
 
             if (Creature* creature = player->GetMap()->GetCreature(targetGuid))
             {

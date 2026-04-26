@@ -1,7 +1,7 @@
 // modules/mod-guild-village/src/guild_village_commands.cpp
 
 #include "ScriptMgr.h"
-#include "Config.h"
+#include "Configuration/Config.h"
 #include "Chat.h"
 #include "ChatCommand.h"
 #include "Player.h"
@@ -592,7 +592,8 @@ namespace
         {
             handler->SendSysMessage(
                 T("Není aktivní žádná výroba.",
-                  "No production is currently running.")
+                  // Keep in sync with ClientAddon/GuildVillageHelper/GuildVillageHelper.lua (silent filter + parser).
+                  "No active production.")
             );
             return;
         }

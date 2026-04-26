@@ -12,7 +12,7 @@
 #include "GuildMgr.h"
 #include "ObjectMgr.h"
 #include "Log.h"
-#include "Config.h"
+#include "Configuration/Config.h"
 #include "DataMap.h"
 #include "gv_common.h"
 

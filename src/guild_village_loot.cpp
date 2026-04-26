@@ -7,7 +7,7 @@
 #include "DatabaseEnv.h"
 #include "gv_common.h"
 #include "Chat.h"
-#include "Config.h"
+#include "Configuration/Config.h"
 #include "Group.h"
 #include "Log.h"
 #include "ObjectMgr.h"

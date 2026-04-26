@@ -1,7 +1,7 @@
 // modules/mod-guild-village/src/guild_village_bot.cpp
 
 #include "ScriptMgr.h"
-#include "Config.h"
+#include "Configuration/Config.h"
 #include "Player.h"
 #include "Guild.h"
 #include "DatabaseEnv.h"

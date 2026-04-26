@@ -66,7 +66,7 @@ namespace GuildVillage
         }
 
         // VOLÁ SE KAŽDÝ TICK – udržuje rest-flag proti vnitřnímu resetu
-        void OnPlayerAfterUpdate(Player* player, uint32 /*diff*/) override
+        void OnPlayerUpdate(Player* player, uint32 /*diff*/) override
         {
             Apply(player);
         }

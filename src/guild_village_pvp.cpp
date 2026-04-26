@@ -5,7 +5,7 @@
 #include "Guild.h"
 #include "Battleground.h"
 #include "Chat.h"
-#include "Config.h"
+#include "Configuration/Config.h"
 #include "DatabaseEnv.h"
 #include "gv_common.h"
 #include "Log.h"

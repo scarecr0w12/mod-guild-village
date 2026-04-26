@@ -1,11 +1,12 @@
 // modules/mod-guild-village/src/guild_village_quests_hooks.cpp
 
 #include "ScriptMgr.h"
-#include "Player.h"
+#include "Configuration/Config.h"
 #include "Creature.h"
 #include "GameObject.h"
 #include "ObjectAccessor.h"
 #include "Item.h"
+#include "Player.h"
 #include "SharedDefines.h"
 #include "GameTime.h"
 #include "AllSpellScript.h"

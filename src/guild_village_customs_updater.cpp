@@ -2,7 +2,7 @@
 
 #include "ScriptMgr.h"
 #include "DatabaseEnv.h"
-#include "Config.h"
+#include "Configuration/Config.h"
 #include "Log.h"
 #include "CryptoHash.h"
 #include "Util.h"
