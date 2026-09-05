@@ -43,7 +43,7 @@ static bool FindSpiritHealerPos(uint32 map, uint32 phaseId, float& x, float& y, 
 {
     if (QueryResult res = WorldDatabase.Query(
         "SELECT position_x, position_y, position_z, orientation "
-        "FROM creature WHERE id1=6491 AND map={} AND phaseMask={} LIMIT 1",
+        "FROM creature WHERE id=6491 AND map={} AND phaseMask={} LIMIT 1",
         map, phaseId))
     {
         Field* f = res->Fetch();

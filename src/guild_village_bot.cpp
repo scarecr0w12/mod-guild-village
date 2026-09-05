@@ -365,8 +365,8 @@ namespace GuildVillage
             "987421";
 
         if (QueryResult res = WorldDatabase.Query(
-            "SELECT id1, position_x, position_y, position_z, orientation "
-            "FROM creature WHERE map={} AND phaseMask={} AND id1 IN ({}) "
+            "SELECT id, position_x, position_y, position_z, orientation "
+            "FROM creature WHERE map={} AND phaseMask={} AND id IN ({}) "
             "ORDER BY RAND() LIMIT 1",
             DefMap(), phaseMask, farmEntriesSql))
         {

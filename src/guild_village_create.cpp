@@ -268,7 +268,7 @@ namespace GuildVillage
                 if (!map)
                 {
                     WorldDatabase.Execute(
-                        "INSERT INTO creature (id1,map,spawnMask,phaseMask,position_x,position_y,position_z,orientation,spawntimesecs,wander_distance,MovementType,Comment) "
+                        "INSERT INTO creature (id,map,spawnMask,phaseMask,position_x,position_y,position_z,orientation,spawntimesecs,wander_distance,MovementType,Comment) "
                         "VALUES ({}, {}, 1, {}, {}, {}, {}, {}, {}, {}, {}, 'Village mob')",
                         entry, mapId, phaseId, x, y, z, o, resp, wander, (uint32)mt
                     );
@@ -378,7 +378,7 @@ namespace GuildVillage
                 if (!map)
                 {
                     WorldDatabase.Execute(
-                        "INSERT INTO creature (id1,map,spawnMask,phaseMask,position_x,position_y,position_z,orientation,spawntimesecs,wander_distance,MovementType) "
+                        "INSERT INTO creature (id,map,spawnMask,phaseMask,position_x,position_y,position_z,orientation,spawntimesecs,wander_distance,MovementType) "
                         "VALUES ({}, {}, 1, {}, {}, {}, {}, {}, {}, {}, {})",
                         entry, mapId, phaseId, x, y, z, o, resp, wander, (uint32)mt
                     );

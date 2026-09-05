@@ -155,7 +155,7 @@ namespace
                 {
                     WorldDatabase.Execute(
                         "INSERT INTO creature "
-                        "(id1, map, spawnMask, phaseMask, position_x, position_y, position_z, orientation, "
+                        "(id, map, spawnMask, phaseMask, position_x, position_y, position_z, orientation, "
                         " spawntimesecs, wander_distance, MovementType, Comment) "
                         "VALUES ({}, {}, 1, {}, {}, {}, {}, {}, {}, {}, {}, 'Village mob')",
                         entry, mapId, phaseId, x, y, z, o, respawnSec, wander, (uint32)moveType

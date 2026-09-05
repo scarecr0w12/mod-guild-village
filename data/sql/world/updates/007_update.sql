@@ -8,7 +8,7 @@ UPDATE `creature`
        `position_y` = -348.106,
        `position_z` = 247.338,
        `orientation` = 6.27212
- WHERE `id1` = 987400;
+ WHERE `id` = 987400;
 
 -- creature_template: Change hp/dmg/mana/defense modiffier
 UPDATE `creature_template` SET `entry`=987400, `difficulty_entry_1`=0, `difficulty_entry_2`=0, `difficulty_entry_3`=0, `KillCredit1`=0, `KillCredit2`=0, `name`='Thranok the Unyielding', `subname`='', `IconName`=NULL, `gossip_menu_id`=0, `minlevel`=83, `maxlevel`=83, `exp`=1, `faction`=14, `npcflag`=0, `speed_walk`=1, `speed_run`=1.42857, `speed_swim`=1, `speed_flight`=1, `detection_range`=15, `rank`=3, `dmgschool`=0, `DamageModifier`=24, `BaseAttackTime`=2400, `RangeAttackTime`=2000, `BaseVariance`=1, `RangeVariance`=1, `unit_class`=1, `unit_flags`=64, `unit_flags2`=2048, `dynamicflags`=8, `family`=0, `type`=4, `type_flags`=76, `lootid`=987400, `pickpocketloot`=0, `skinloot`=0, `PetSpellDataId`=0, `VehicleId`=0, `mingold`=500000, `maxgold`=1000000, `AIName`='', `MovementType`=0, `HoverHeight`=1, `HealthModifier`=150, `ManaModifier`=15, `ArmorModifier`=16, `ExperienceModifier`=1, `RacialLeader`=0, `movementId`=0, `RegenHealth`=1, `CreatureImmunitiesId`=2243, `flags_extra`=0, `ScriptName`='boss_thranok_the_unyielding', `VerifiedBuild`=12340 WHERE `entry`=987400;

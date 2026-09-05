@@ -99,7 +99,7 @@ namespace
     static std::optional<uint32> FindBossGuid(uint32 id1, uint32 phaseMask)
     {
         if (QueryResult r = WorldDatabase.Query(
-            "SELECT guid FROM creature WHERE id1={} AND map={} AND phaseMask={} LIMIT 1",
+            "SELECT guid FROM creature WHERE id={} AND map={} AND phaseMask={} LIMIT 1",
             id1, DefMap(), phaseMask))
             return (*r)[0].Get<uint32>();
         return std::nullopt;

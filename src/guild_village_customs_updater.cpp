@@ -8,6 +8,7 @@
 #include "Util.h"
 #include "gv_common.h"
 
+#include <cctype>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -372,6 +373,78 @@ static void CollectSqlFiles(std::string const& root, std::vector<std::string>& o
     std::sort(out.begin(), out.end());
 }
 
+// ---------- schema qualifier rewriting ----------
+// The shipped .sql files qualify every table as `customs`.`gv_x`, but the
+// schema name is configurable through GuildVillage.Database.Name. Statements
+// run on the world connection, whose default database is the world one, so a
+// hardcoded qualifier sends them to a schema that may not exist while simply
+// dropping it would create the tables in the world database. Rewrite the
+// qualifier to whatever schema is configured before executing.
+static std::string RewriteSchemaQualifiers(std::string sql)
+{
+    std::string const wanted = GuildVillage::QuotedDatabaseName() + ".";
+    for (char const* literal : { "`customs`.", "customs." })
+    {
+        std::string const needle(literal);
+        if (needle == wanted)
+            continue;
+        std::size_t at = 0;
+        while ((at = sql.find(needle, at)) != std::string::npos)
+        {
+            // `customs`. inside a longer identifier is not a qualifier
+            if (at && (std::isalnum(static_cast<unsigned char>(sql[at - 1])) || sql[at - 1] == '_'))
+            {
+                at += needle.size();
+                continue;
+            }
+            sql.replace(at, needle.size(), wanted);
+            at += wanted.size();
+        }
+    }
+    // Some files name the schema as a string rather than a qualifier, in
+    // INFORMATION_SCHEMA lookups and in `SET @SCHEMA := 'customs'`.
+    {
+        std::string const needle = "'customs'";
+        std::string const replacement = "'" + GuildVillage::DatabaseName() + "'";
+        if (needle != replacement)
+        {
+            std::size_t at = 0;
+            while ((at = sql.find(needle, at)) != std::string::npos)
+            {
+                sql.replace(at, needle.size(), replacement);
+                at += replacement.size();
+            }
+        }
+    }
+
+    // A table named with no schema at all would be created in the world
+    // database, because that is the default schema of the connection these
+    // statements run on. Every table this module owns is `gv_`-prefixed, so
+    // qualify those that are not qualified already.
+    {
+        std::string out;
+        out.reserve(sql.size());
+        std::string const prefix = GuildVillage::QuotedDatabaseName() + ".";
+        for (std::size_t i = 0; i < sql.size(); ++i)
+        {
+            if (sql[i] == '`' && sql.compare(i + 1, 3, "gv_") == 0)
+            {
+                // already qualified if a '.' precedes the opening backtick
+                std::size_t back = out.size();
+                while (back && std::isspace(static_cast<unsigned char>(out[back - 1])))
+                    --back;
+                bool qualified = back && out[back - 1] == '.';
+                if (!qualified)
+                    out += prefix;
+            }
+            out += sql[i];
+        }
+        sql.swap(out);
+    }
+
+    return sql;
+}
+
 // ---------- executor ----------
 static bool ExecuteSqlFile(std::string const& moduleName, std::string const& filePath, std::string const& filenameKey)
 {
@@ -408,9 +481,10 @@ static bool ExecuteSqlFile(std::string const& moduleName, std::string const& fil
             continue;
         }
 
-        std::string prev = s.substr(0, std::min<size_t>(160, s.size()));
-        WorldDatabase.DirectExecute(s);
-        LOG_DEBUG(GuildVillage::LogCategory::Customs, "[customs] exec: {}{}", prev.c_str(), s.size()>160?" ...":"");
+        std::string const stmt = RewriteSchemaQualifiers(s);
+        std::string prev = stmt.substr(0, std::min<size_t>(160, stmt.size()));
+        WorldDatabase.DirectExecute(stmt);
+        LOG_DEBUG(GuildVillage::LogCategory::Customs, "[customs] exec: {}{}", prev.c_str(), stmt.size()>160?" ...":"");
     }
 
     MarkApplied(moduleName, filenameKey, sha);
